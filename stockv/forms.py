@@ -98,6 +98,14 @@ class CompanyRegistrationForm(forms.ModelForm):
         }
 
 class ProductForm(forms.ModelForm):
+    initial_stock = forms.IntegerField(
+        required=False,
+        min_value=0,
+        initial=0,
+        label="Stock Inicial",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'})
+    )
+
     class Meta:
         model = Product
         # Excluimos campos calculados o que se asignan por lógica interna si corresponde

@@ -180,7 +180,7 @@ class Product(models.Model):
 	# asociamos el producto a una company para que productos iguales no se mezclen entre empresas
 	# usamos 'Company' (el nombre del modelo) entrecomillas, con el nombre del modelo como string, para no tener que importarlo.
 	company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products', verbose_name="Companía")
-	name = models.CharField(max_length=255, verbose_name="Nombre del Producto")
+	name = models.CharField(max_length=255, verbose_name="Categoría")
 	# SKU (Stock Keeping Unit), código interno único para identificar el producto, distinto al código de barras.
 	sku = models.CharField(max_length=50, blank=True, null=True, verbose_name="SKU / Código Interno")
 	barcode = models.CharField(max_length=100, blank=True, null=True, verbose_name="Código de Barras / EAN")

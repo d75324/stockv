@@ -196,13 +196,15 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         company = self.get_company()
         form.instance.company = company
         response = super().form_valid(form)
+        
+        initial_stock = form.cleaned_data.get('initial_stock') or 0
 
         default_warehouse = Warehouse.objects.filter(company=company).first()
         if default_warehouse:
             WarehouseStock.objects.get_or_create(
                 product=self.object,
                 warehouse=default_warehouse,
-                defaults={'quantity': 0}
+                defaults={'quantity': initial_stock}
             )
         return response
 
