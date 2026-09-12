@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container" style="padding: 2rem; width: 100%; max-width: 1200px; margin: 0 auto;">
+
+    <!-- CABECERA: Título, Empresa, Depósito y Botones de Acción -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2>
+                Panel Principal - {% if company %}{{ company.name }}{% else %}Sin Empresa Asignada{% endif %}
+            </h2>
+            <!-- Indicador del Depósito por defecto -->
+            <p style="margin: 0.3rem 0 0 0; font-size: 0.95rem; color: var(--muted);">
+                <span>🏢 Depósito Activo: <strong>{{ default_warehouse.name|default:"Depósito Central" }}</strong></span>
+                <a href="#" style="font-size: 0.85rem; text-decoration: underline; margin-left: 0.5rem;">(Gestionar Depósitos)</a>
+            </p>
+        </div>
+        
+        <!-- Botones de Carga de Productos -->
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{% url 'product_add' %}" style="text-decoration: none;">
+                <button style="padding: 0.5rem 1rem; font-size: 0.9rem; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    + Carga Individual
+                </button>
+            </a>
+            <a href="#" style="text-decoration: none;">
+                <button style="padding: 0.5rem 1rem; font-size: 0.9rem; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    📥 Importar CSV
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- Fila de Semáforos -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        
+        <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #44c7e8;">
+            <h3 style="font-size: 2.2rem; color: #333; margin-bottom: 0.5rem;">{{ total_stock_units }}</h3>
+            <p style="margin: 0; font-weight: 600;">Unidades Totales en Stock</p>
+        </div>
+
+        <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #f6a39d;">
+            <h3 style="font-size: 2.2rem; color: #d9534f; margin-bottom: 0.5rem;">{{ low_stock_count }}</h3>
+            <p style="margin: 0; font-weight: 600;">Productos Bajo Stock Mínimo</p>
+        </div>
+
+        <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #f0ad4e;">
+            <h3 style="font-size: 2.2rem; color: #f0ad4e; margin-bottom: 0.5rem;">{{ pending_transfers }}</h3>
+            <p style="margin: 0; font-weight: 600;">Transferencias Pendientes</p>
+        </div>
+    </div>
+
+    <!-- ============  SECCIÓN DE PRODUCTOS RECIENTES ============ -->
+    <div class="card" style="max-width: 100%; padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0; font-size: 1.2rem;">Productos Recientes / Acceso Directo</h3>
+            <a href="#" style="text-decoration: none;">
+                <button style="width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem;">Ver Catálogo Completo</button>
+            </a>
+        </div>
+        <hr>
+
+        <!-- ============  T A B L A ============ -->
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #d1d5db; color: var(--muted);">
+                        <th style="padding: 0.75rem;">Categoría</th>
+                        <th style="padding: 0.75rem;">SKU</th>
+                        <th style="padding: 0.75rem;">Descripción</th>
+                        <th style="padding: 0.75rem;">Stock Actual</th>
+                        <th style="padding: 0.75rem;">Precio Venta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in recent_products %}
+                    <tr style="border-bottom: 1px solid rgba(209, 213, 219, 0.4);">
+                        <td style="padding: 0.75rem; font-weight: 600;">{{ product.name }}</td>
+                        <td style="padding: 0.75rem; color: var(--muted);">{{ product.sku|default:"Sin SKU" }}</td>
+                        <td style="padding: 0.75rem;">{{ product.current_stock }} {{ product.uom.abbreviation }}</td>
+                        <td style="padding: 0.75rem;">$ {{ product.sale_price }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--muted);">
+                            Todavía no has cargado ningún producto.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- ============ FIN DE TABLA ============ -->
+    </div>
+
+</div>
+{% endblock %}

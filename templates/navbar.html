@@ -1,0 +1,121 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary mx-3 mt-3 rounded">
+
+{% if user.is_authenticated %}
+
+    <!-- Navbar para usuario autenticado -->
+
+    <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                Cargar Pedido
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                Ultimos Pedidos
+            </a>
+        </li>
+    </ul>
+
+    <!-- ========= USUARIO / PERFIL / CERRAR SESIÓN========== -->
+
+    <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown">
+                {{ user.first_name }} {{ user.last_name }} 
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item" href="#">
+                        Perfil
+                    </a>
+                </li>
+
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li>
+                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item" style="background: none; border: none; text-align: left; width: 100%; cursor: pointer;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+{% else %}
+
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">StockV</a>
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Opciones de navegación a la izquierda -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{%  url 'home' %}">
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" aria-disabled="true">
+                        
+                    </a>
+                </li>
+            </ul>
+            <!-- Dropdown a la derecha -->
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        Ingresar
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{%  url 'login' %}">
+                                Login
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{%  url 'register' %}">
+                                Registrarse
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                Recuperar contraseña
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</nav>

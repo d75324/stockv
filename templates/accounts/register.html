@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<div class="center-page">
+    <div class="card">
+        <h2>Crear Cuenta</h2>
+        <p>Registrate para comenzar a usar el sistema</p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Mostrar errores generales del formulario si los hay -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" style="font-size: 0.85rem; margin-bottom: 1rem; color: #dc2626;">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <!-- ITERACIÓN DINÁMICA SOBRE LOS CAMPOS DEL FORMULARIO -->
+            <!-- La etiqueta 'for field in form' es un bucle (provisto por el motor de templates de Django Jinja2-like) para recorrer uno por uno todos los campos definidos en UserRegistrationForm. En lugar de escribir manualmente el código HTML para cada campo, el bucle for automatiza ese proceso tomando la estructura del UserRegistrationForm definido antes. -->
+
+            {% for field in form %}
+                <div style="margin-bottom: 1rem;">
+                    <!-- Renderiza el input (ya viene con las clases 'form-control' y placeholders configurados desde Python) -->
+                    {{ field }}
+                    
+                    <!-- Mostrar errores específicos de cada campo -->
+                    {% if field.errors %}
+                        <div style="font-size: 0.8rem; color: #dc2626; margin-top: 0.3rem; text-align: left;">
+                            {{ field.errors.as_text }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit">Registrarse</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

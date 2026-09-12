@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<br><br>
+<div class="center-page">
+<div class="card">
+  <h2>Iniciar Sesión</h2>
+  <p>Ingresá tus datos para acceder al sistema</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <!-- Errores generales de autenticación (ej: credenciales inválidas) -->
+    {% if form.non_field_errors %}
+      <div style="font-size: 0.85rem; margin-bottom: 1.2rem; color: #dc2626; text-align: center;">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    <!-- Recorrido de los campos del formulario -->
+    {% for field in form %}
+      <div style="margin-bottom: 1.2rem; text-align: left;">
+        <!-- Etiqueta descriptiva del campo -->
+        <label style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--text);">
+          {{ field.label }}
+        </label>
+        <!-- Caja de texto / input -->
+        {{ field }}
+        
+        <!-- Errores específicos del campo -->
+        {% if field.errors %}
+          <div style="font-size: 0.8rem; color: #dc2626; margin-top: 0.3rem;">
+            {{ field.errors.as_text }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" style="margin-top: 0.5rem;">Ingresar</button>
+  </form>
+</div>
+</div>
+{% endblock %}
+

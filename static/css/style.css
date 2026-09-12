@@ -1,0 +1,208 @@
+  /* CSS provisto y refinado */
+  :root{
+    --glass: rgba(245,245,245,0.82);
+    --text: #4f4f4f;
+    --muted: #7c7c7c;
+    --accent: #44c7e8;
+  }
+
+
+  body{
+    min-height:100vh;
+    background:
+      linear-gradient(
+        135deg,
+        #5acfe7 0%,
+        #8fe0ee 25%,
+        #d8eef4 45%,
+        #f8baa6 70%,
+        #f6a39d 100%
+      );
+    font-family:"Segoe UI","Inter",sans-serif;
+    color:var(--text);
+    margin: 0;
+  }
+
+  /* Nueva clase, solo para páginas tipo login que necesitan la card centrada */
+  .center-page{
+    min-height: calc(100vh - 56px); /* ajustá 56px según la altura real de tu navbar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card{
+    background:var(--glass);
+    backdrop-filter:blur(18px);
+
+    border-radius:12px;
+
+    border:1px solid rgba(255,255,255,.6);
+
+    box-shadow:
+        0 6px 15px rgba(0,0,0,.12);
+
+    /* Dimensiones y relleno de la tarjeta */
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+  }
+
+  input{
+    background:rgba(245,245,245,.92);
+    border: 1px solid #d1d5db; /* Borde gris sutil agregado */
+    border-radius:18px;
+    color:var(--text);
+
+    /* Formato del campo de texto */
+    width: 100%;
+    padding: 0.85rem 1.2rem;
+    margin-bottom: 1.2rem;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Efecto al hacer clic / foco en el campo */
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(68, 199, 232, 0.2);
+  }
+
+  input::placeholder {
+    color: var(--muted);
+  }
+
+  button{
+    background:#b8ebfb;
+    border:none;
+    border-radius:8px;
+
+    /* Formato del botón */
+    width: 100%;
+    padding: 0.85rem;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+  }
+
+  button:hover {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  /* Títulos y subtítulos */
+  .card h2 {
+    margin: 0 0 0.4rem 0;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+
+  .card p {
+    margin: 0 0 1.8rem 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+/* Asegura que cualquier input dentro de una card tome el estilo glass */
+  .card input[type="text"],
+  .card input[type="email"],
+  .card input[type="password"] {
+      background: rgba(245, 245, 245, 0.92);
+      border: 1px solid #d1d5db;
+      border-radius: 18px;
+      color: var(--text);
+      width: 100%;
+      padding: 0.85rem 1.2rem;
+      margin-bottom: 1.2rem;
+      box-sizing: border-box;
+      outline: none;
+      font-size: 0.95rem;
+  }
+
+/* Clase personalizada para los inputs para asegurar que tomen el diseño */
+.custom-input {
+    background: rgba(245, 245, 245, 0.92) !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 18px !important;
+    color: var(--text) !important;
+    width: 100% !important;
+    padding: 0.85rem 1.2rem !important;
+    margin-bottom: 1.2rem !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    font-size: 0.95rem !important;
+}
+
+.custom-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(68, 199, 232, 0.2) !important;
+}
+
+.custom-input::placeholder {
+    color: var(--muted) !important;
+}
+
+/* Estilo glassmorphism para la barra de navegación */
+.navbar {
+    background: var(--glass) !important;
+    backdrop-filter: blur(18px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .6);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, .12);
+}
+
+/* Ajuste de color para los textos de los links del navbar para que respeten la paleta */
+.navbar .nav-link {
+    color: var(--text) !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover, 
+.navbar .nav-link.active {
+    color: var(--accent) !important;
+}
+
+/* Estilo para la marca o logo si se usa */
+.navbar .navbar-brand {
+    color: var(--text) !important;
+    font-weight: 600;
+}
+
+/* Estilo de botón aplicable a <a>, mismo diseño que button */
+.btn-style{
+  background:#b8ebfb;
+  border:none;
+  border-radius:8px;
+  display: inline-block;
+  width: 100%;
+  padding: 0.85rem;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  box-sizing: border-box;
+}
+
+.btn-style:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.btn-style:active {
+  transform: scale(0.98);
+}

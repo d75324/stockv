@@ -1,0 +1,32 @@
+<!-- object_list: variable de contexto, Dj la genera con vistas genéricas basadas en clases (Class-Based Views), específicamente ListView. -->
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+        <th scope="col">ID</th>
+        <th scope="col">SKU</th>
+        <th scope="col">Categoría</th>
+        <th scope="col">Descripción</th>
+        <th scope="col">Stock</th>
+        <th scope="col">Costo</th>
+        <th scope="col">Precio Venta</th>
+        <th scope="col"><u>H</u></th>
+        <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in product_list %}
+            <tr>
+                <td> {{ product.id }} </td>
+                <td> {{ product.sku }} </td>
+                <td> {{ product.name }} </td>
+                <td> {{ product.description }} </td>
+                <!-- ========= EL STOCK LO TENGO QUE TRAER DE WarehouseStock ========== -->
+                <td> {{ product.sku }} </td>
+                <td> {{ product.cost_price }} </td>
+                <td> {{ product.sale_price }} </td>
+            </tr>
+
+        {% endfor %}
+    </tbody>
+</table>
