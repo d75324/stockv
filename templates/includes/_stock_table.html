@@ -11,7 +11,6 @@
         <th scope="col">Costo</th>
         <th scope="col">Precio Venta</th>
         <th scope="col"><u>H</u></th>
-        <th scope="col"></th>
         </tr>
     </thead>
     <tbody>
@@ -21,12 +20,15 @@
                 <td> {{ product.sku }} </td>
                 <td> {{ product.name }} </td>
                 <td> {{ product.description }} </td>
-                <!-- ========= EL STOCK LO TENGO QUE TRAER DE WarehouseStock ========== -->
-                <td> {{ product.sku }} </td>
+                <td> {{ product.current_stock }} </td>
                 <td> {{ product.cost_price }} </td>
                 <td> {{ product.sale_price }} </td>
+                <td></td>
             </tr>
-
+        {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center;">Todavía no hay productos cargados.</td>
+            </tr>
         {% endfor %}
     </tbody>
 </table>

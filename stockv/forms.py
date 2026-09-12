@@ -91,7 +91,7 @@ class CompanyRegistrationForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre comercial / Razón Social'}),
             'tax_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CUIT / RUT / NIT'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono de contacto'}),
-            'website': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'www.tuempresa.com'}),
+            'website': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'www.tuempresa.com'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Dirección física', 'rows': 2}),
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ciudad'}),
             'logo': forms.ClearableFileInput(attrs={'class': 'form-control'}),

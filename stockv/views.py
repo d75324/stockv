@@ -65,12 +65,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             ).count()
             
             # Listado rápido para la tabla inferior
-            context['recent_products'] = products.order_by('-created_at')[:5]
+            context['product_list'] = products.order_by('-created_at')[:5]
         else:
             context['total_stock_units'] = 0
             context['low_stock_count'] = 0
             context['pending_transfers'] = 0
-            context['recent_products'] = []
+            context['product_list'] = []
 
         return context
 
