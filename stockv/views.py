@@ -1,5 +1,5 @@
 from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm
-from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure
+from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
@@ -206,5 +206,16 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
                 warehouse=default_warehouse,
                 defaults={'quantity': initial_stock}
             )
+            if initial_stock > 0:
+                StockMovement.objects.create(
+                    company=company,
+                    product=self.object,
+                    warehouse=default_warehouse,
+                    movement_type='in',
+                    quantity=initial_stock,
+                    user=self.request.user, # quien cargó el stock? >> auditoría
+                    reason='Stock inicial'
+                )
+                
         return response
 
