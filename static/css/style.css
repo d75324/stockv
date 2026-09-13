@@ -1,4 +1,4 @@
-  /* CSS provisto y refinado */
+  /* ========== CSS ========== */
   :root{
     --glass: rgba(245,245,245,0.82);
     --text: #4f4f4f;
@@ -23,9 +23,9 @@
     margin: 0;
   }
 
-  /* Nueva clase, solo para páginas tipo login que necesitan la card centrada */
+  /* ========== Solo para páginas tipo login que necesitan la card centrada ========== */
   .center-page{
-    min-height: calc(100vh - 56px); /* ajustá 56px según la altura real de tu navbar */
+    min-height: calc(100vh - 56px); /* ajustá 56px según la altura real del navbar */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -34,11 +34,8 @@
   .card{
     background:var(--glass);
     backdrop-filter:blur(18px);
-
     border-radius:12px;
-
     border:1px solid rgba(255,255,255,.6);
-
     box-shadow:
         0 6px 15px rgba(0,0,0,.12);
 
@@ -55,7 +52,7 @@
     border-radius:18px;
     color:var(--text);
 
-    /* Formato del campo de texto */
+    /* ======== Formato del campo de texto ======== */
     width: 100%;
     padding: 0.85rem 1.2rem;
     margin-bottom: 1.2rem;
@@ -65,7 +62,7 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  /* Efecto al hacer clic / foco en el campo */
+  /* ======== Efecto al hacer clic / foco en el campo ======== */
   input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(68, 199, 232, 0.2);
@@ -99,7 +96,7 @@
     transform: scale(0.98);
   }
 
-  /* Títulos y subtítulos */
+  /* ======== Títulos y subtítulos ======== */
   .card h2 {
     margin: 0 0 0.4rem 0;
     text-align: center;
@@ -114,7 +111,7 @@
     font-size: 0.9rem;
   }
 
-/* Asegura que cualquier input dentro de una card tome el estilo glass */
+/* ======== Asegura que cualquier input dentro de una card tome el estilo glass ======== */
   .card input[type="text"],
   .card input[type="email"],
   .card input[type="password"] {
