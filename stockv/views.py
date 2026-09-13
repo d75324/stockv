@@ -1,14 +1,14 @@
-from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm
-from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement
+from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm, ProviderForm, ProductRestockForm
+from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement, Provider
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, FormView
 from django.views.generic.edit import CreateView
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import CreateView
+# from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 User = get_user_model()
@@ -218,4 +218,108 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
                 )
                 
         return response
+
+
+class ProviderCreateView(LoginRequiredMixin, CreateView):
+    model = Provider
+    form_class = ProviderForm
+    template_name = 'inventory/provider_form.html'
+    success_url = reverse_lazy('dashboard')
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.get_company()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company'] = self.get_company()
+        return context
+
+    def form_valid(self, form):
+        form.instance.company = self.get_company()
+        return super().form_valid(form)
+
+
+class ProductRestockView(LoginRequiredMixin, FormView):
+    """
+    Formulario simplificado para recargar stock de un producto ya cargado:
+    Cantidad, Proveedor y Precio de Costo (por defecto, el último cargado).
+    """
+    form_class = ProductRestockForm
+    template_name = 'inventory/product_restock.html'
+    success_url = reverse_lazy('dashboard')
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_product(self):
+        return get_object_or_404(Product, pk=self.kwargs['pk'], company=self.get_company())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.get_company()
+        kwargs['product'] = self.get_product()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company'] = self.get_company()
+        context['product'] = self.get_product()
+        return context
+
+    def form_valid(self, form):
+        company = self.get_company()
+        product = self.get_product()
+
+        quantity = form.cleaned_data['quantity']
+        provider = form.cleaned_data['provider']
+        cost_price = form.cleaned_data['cost_price']
+
+        # Actualizamos el proveedor y precio de costo del producto si cambiaron
+        product.provider = provider
+        product.cost_price = cost_price
+        product.save(update_fields=['provider', 'cost_price'])
+
+        default_warehouse = Warehouse.objects.filter(company=company).first()
+        if default_warehouse:
+            stock, created = WarehouseStock.objects.get_or_create(
+                product=product,
+                warehouse=default_warehouse,
+                defaults={'quantity': quantity}
+            )
+            if not created:
+                stock.quantity += quantity
+                stock.save(update_fields=['quantity'])
+
+            StockMovement.objects.create(
+                company=company,
+                product=product,
+                warehouse=default_warehouse,
+                movement_type='in',
+                quantity=quantity,
+                user=self.request.user,
+                reason=f'Recarga de stock - Proveedor: {provider.name}'
+            )
+
+        provider.last_purchase = timezone.now()
+        provider.save(update_fields=['last_purchase'])
+
+        return super().form_valid(form)
+
 

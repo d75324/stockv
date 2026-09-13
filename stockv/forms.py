@@ -169,3 +169,10 @@ class ProductForm(forms.ModelForm):
         self.fields['provider'].required = False
         self.fields['provider'].empty_label = "Sin Proveedor (Opcional)"
 
+
+
+class ProviderForm():
+	pass
+
+class ProductRestockForm():
+	pass
