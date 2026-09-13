@@ -105,6 +105,12 @@ class ProductForm(forms.ModelForm):
         label="Stock Inicial",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'})
     )
+    
+    field_order = [
+        'name', 'sku', 'barcode', 'brand', 'provider', 'uom',
+        'cost_price', 'initial_stock', 'sale_price',
+        'min_stock_level', 'description', 'image',
+    ]
 
     class Meta:
         model = Product
