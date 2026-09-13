@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<!-- ========== Traigo el usuario y la compañía porque algo está ocurriendo =========== -->
+<!-- ========== Traigo el usuario y la compañía =========== -->
 <div style="max-width: 800px; margin: 1rem auto; color: var(--text); font-size: 0.9rem;">
     <p><strong>Usuario:</strong> {{ request.user.get_full_name|default:request.user.email }}</p>
     <p><strong>Compañía:</strong> {{ company.name }}</p>

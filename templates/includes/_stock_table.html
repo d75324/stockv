@@ -10,7 +10,7 @@
         <th scope="col">Stock</th>
         <th scope="col">Costo</th>
         <th scope="col">Precio Venta</th>
-        <th scope="col"><u>H</u></th>
+        <th scope="col"><u>R</u></th>
         </tr>
     </thead>
     <tbody>
@@ -23,7 +23,9 @@
                 <td> {{ product.current_stock }} </td>
                 <td> {{ product.cost_price }} </td>
                 <td> {{ product.sale_price }} </td>
-                <td></td>
+                <td>
+                    <a href="{% url 'product_restock' product.id %}" title="Recargar Stock">R</a>
+                </td>
             </tr>
         {% empty %}
             <tr>
