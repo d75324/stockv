@@ -169,10 +169,87 @@ class ProductForm(forms.ModelForm):
         self.fields['provider'].required = False
         self.fields['provider'].empty_label = "Sin Proveedor (Opcional)"
 
+class ProviderForm(forms.ModelForm):
+    class Meta:
+        model = Provider
+        fields = [
+            'name', 'code', 'tax_id', 'contact_person', 'email', 'phone', 'mobile',
+            'website', 'address', 'city', 'state_province', 'country', 'zip_code',
+            'provider_type', 'payment_terms', 'credit_limit', 'currency',
+            'rating', 'is_preferred', 'main_products', 'warehouses', 'notes',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del proveedor'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código interno (Opcional)'}),
+            'tax_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'RUT / NIT / CUIT (Opcional)'}),
+            'contact_person': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Persona de contacto (Opcional)'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'correo@proveedor.com'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
+            'mobile': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Celular'}),
+            'website': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'www.proveedor.com'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Dirección', 'rows': 2}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ciudad'}),
+            'state_province': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Departamento / Provincia'}),
+            'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'País'}),
+            'zip_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código Postal'}),
+            'provider_type': forms.Select(attrs={'class': 'form-control'}),
+            'payment_terms': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 30 días, contado'}),
+            'credit_limit': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'currency': forms.Select(attrs={'class': 'form-control'}),
+            'rating': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
+            'main_products': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Principales productos o servicios (Opcional)', 'rows': 2}),
+            'warehouses': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Notas internas (Opcional)', 'rows': 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Extraemos la compañía que viene desde la vista, igual que en ProductForm
+        company = kwargs.pop('company', None)
+        super().__init__(*args, **kwargs)
+
+        if company:
+            # Los depósitos asociados deben pertenecer a la misma empresa
+            self.fields['warehouses'].queryset = Warehouse.objects.filter(company=company)
+
+        # Campos opcionales para simplificar el alta
+        for field_name in ['code', 'tax_id', 'contact_person', 'email', 'phone', 'mobile',
+                            'website', 'address', 'city', 'state_province', 'country', 'zip_code',
+                            'payment_terms', 'credit_limit', 'rating', 'main_products',
+                            'warehouses', 'notes']:
+            self.fields[field_name].required = False
+
+class ProductRestockForm(forms.Form):
+    """
+    Formulario simplificado para recargar stock de un producto ya ingresado.
+    Solo solicita Cantidad, Proveedor y Precio de Costo (por defecto, el último precio cargado).
+    """
+    quantity = forms.IntegerField(
+        min_value=1,
+        label="Cantidad",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Cantidad a ingresar'})
+    )
+    provider = forms.ModelChoiceField(
+        queryset=Provider.objects.none(),
+        label="Proveedor",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    cost_price = forms.DecimalField(
+        max_digits=12, decimal_places=2,
+        label="Precio de Costo",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company', None)
+        product = kwargs.pop('product', None)
+        super().__init__(*args, **kwargs)
+
+        if company:
+            self.fields['provider'].queryset = Provider.objects.filter(company=company, is_active=True)
+
+        if product:
+            # Pre-seleccionamos el proveedor y el precio de costo actuales del producto
+            self.fields['provider'].initial = product.provider
+            self.fields['cost_price'].initial = product.cost_price
 
 
-class ProviderForm():
-	pass
-
-class ProductRestockForm():
-	pass
