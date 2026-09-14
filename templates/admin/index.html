@@ -1,0 +1,96 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+{% if dashboard_stats %}
+<div class="dashboard-stats">
+    <div class="dashboard-card">
+        <p class="dashboard-card-label">Fecha y hora local</p>
+        <p class="dashboard-card-value" id="dashboard-local-datetime">--:--:--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <p class="dashboard-card-label">Usuarios registrados</p>
+        <p class="dashboard-card-value">{{ dashboard_stats.total_users }}</p>
+        <p class="dashboard-card-delta">
+            +{{ dashboard_stats.new_users_7d }} últimos 7 días &middot;
+            +{{ dashboard_stats.new_users_30d }} últimos 30 días
+        </p>
+    </div>
+
+    <div class="dashboard-card">
+        <p class="dashboard-card-label">Accesos (última semana)</p>
+        <p class="dashboard-card-value">{{ dashboard_stats.accesses_7d }}</p>
+    </div>
+
+    <div class="dashboard-card">
+        <p class="dashboard-card-label">Productos (nuevos o restock)</p>
+        <p class="dashboard-card-value">{{ dashboard_stats.total_products }}</p>
+        <p class="dashboard-card-delta">
+            +{{ dashboard_stats.new_products_7d }} últimos 7 días &middot;
+            +{{ dashboard_stats.new_products_30d }} últimos 30 días
+        </p>
+    </div>
+
+    <div class="dashboard-card">
+        <p class="dashboard-card-label">Proveedores registrados</p>
+        <p class="dashboard-card-value">{{ dashboard_stats.total_providers }}</p>
+        <p class="dashboard-card-delta">
+            +{{ dashboard_stats.new_providers_7d }} últimos 7 días &middot;
+            +{{ dashboard_stats.new_providers_30d }} últimos 30 días
+        </p>
+    </div>
+</div>
+
+<style>
+    .dashboard-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .dashboard-card {
+        background: var(--body-bg, #fff);
+        border: 1px solid var(--hairline-color, #ccc);
+        border-radius: 6px;
+        padding: 14px 18px;
+        min-width: 200px;
+        flex: 1 1 200px;
+    }
+    .dashboard-card-label {
+        margin: 0;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--body-quiet-color, #666);
+    }
+    .dashboard-card-value {
+        margin: 6px 0 0;
+        font-size: 1.6rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    .dashboard-card-delta {
+        margin: 4px 0 0;
+        font-size: 0.8rem;
+        color: var(--body-quiet-color, #666);
+    }
+</style>
+
+<script>
+    (function () {
+        var el = document.getElementById('dashboard-local-datetime');
+        if (!el) return;
+
+        function tick() {
+            var now = new Date();
+            el.textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
+{% endif %}
+{{ block.super }}
+{% endblock %}
