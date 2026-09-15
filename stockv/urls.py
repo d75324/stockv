@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, LoginForm, DashboardView, RegisterView, CustomLoginView, CustomLogoutView, CompanyRegistrationView, ProductCreateView, ProviderCreateView, ProductRestockView
+from .views import HomeView, LoginForm, DashboardView, RegisterView, CustomLoginView, CustomLogoutView, CompanyRegistrationView, ProductCreateView, ProviderCreateView, ProductRestockView, ProductCSVImportView, ProductCSVSampleView
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -10,6 +10,8 @@ urlpatterns = [
     path('company/register/', CompanyRegistrationView.as_view(), name='company_register'),
     path('products/add/', ProductCreateView.as_view(), name='product_add'),
     path('providers/add/', ProviderCreateView.as_view(), name='provider_add'),
-    path('products/<int:pk>/restock/', ProductRestockView.as_view(), name='product_restock'),   
+    path('products/<int:pk>/restock/', ProductRestockView.as_view(), name='product_restock'),
+    path('products/import/', ProductCSVImportView.as_view(), name='product_csv_import'),
+    path('products/import/sample/', ProductCSVSampleView.as_view(), name='product_csv_sample'),
 ]
 

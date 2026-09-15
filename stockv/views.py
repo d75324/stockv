@@ -1,17 +1,39 @@
 from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm, ProviderForm, ProductRestockForm
-from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement, Provider
+from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement, Provider, Brand
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.db import transaction
+from django.http import HttpResponse
+from django.views import View
 from django.views.generic import TemplateView, CreateView, FormView
 from django.views.generic.edit import CreateView
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-# from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+import csv
+import io
+from decimal import Decimal, InvalidOperation
 User = get_user_model()
+
+# ================== ENCABEZADO DEL CSV ================== #
+# Se usan tanto para generar la plantilla 'ejemplo' como para leer el archivo que sube el usuario #
+
+PRODUCT_CSV_HEADERS = [
+    'Categoría (Opcional)',
+    'SKU / Código Interno',
+    'Código de Barras / EAN (Opcional)',
+    'Marca (Opcional)',
+    'Proveedor (Opcional)',
+    'Unidad de Medida (UN por default)',
+    'Precio de Costo',
+    'Stock Inicial',
+    'Precio Ventas',
+    'Nivel Mínimo de Stock',
+    'Descripción (opcional)',
+]
+
 
 class HomeView(TemplateView):
     # get_template_names() es un método que viene en TemplateView, lo sobre-escribimos para cambiar el template que va a usar la vista.
@@ -322,4 +344,182 @@ class ProductRestockView(LoginRequiredMixin, FormView):
 
         return super().form_valid(form)
 
+
+class ProductCSVSampleView(LoginRequiredMixin, View):
+    """
+    Descarga un CSV vacío (solo con los encabezados) para que el usuario
+    lo complete offline y lo vuelva a subir en ProductCSVImportView.
+    """
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="stockv_productos_sample.csv"'
+        # BOM para que Excel abra los acentos correctamente
+        response.write('﻿')
+        writer = csv.writer(response)
+        writer.writerow(PRODUCT_CSV_HEADERS)
+        return response
+
+
+class ProductCSVImportView(LoginRequiredMixin, TemplateView):
+    """
+    Carga masiva de productos a partir del CSV completado por el usuario.
+    Cada fila se procesa de forma independiente: si una fila tiene un error,
+    se informa y se sigue con las siguientes en vez de abortar todo el archivo.
+    """
+    template_name = 'inventory/product_csv_import.html'
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company'] = self.get_company()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        company = context['company']
+
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            context['results'] = {'created': 0, 'errors': [{'row': '-', 'message': 'No se seleccionó ningún archivo.'}]}
+            return self.render_to_response(context)
+
+        if not csv_file.name.lower().endswith('.csv'):
+            context['results'] = {'created': 0, 'errors': [{'row': '-', 'message': 'El archivo debe tener extensión .csv'}]}
+            return self.render_to_response(context)
+
+        try:
+            raw = csv_file.read()
+            try:
+                decoded = raw.decode('utf-8-sig')
+            except UnicodeDecodeError:
+                decoded = raw.decode('latin-1')
+        except Exception:
+            context['results'] = {'created': 0, 'errors': [{'row': '-', 'message': 'No se pudo leer el archivo.'}]}
+            return self.render_to_response(context)
+
+        # Excel en español suele exportar CSV separado por ";" en vez de ",".
+        try:
+            dialect = csv.Sniffer().sniff(decoded[:2048], delimiters=',;')
+        except csv.Error:
+            dialect = csv.excel
+
+        reader = csv.DictReader(io.StringIO(decoded), dialect=dialect)
+        reader.fieldnames = [(h or '').strip() for h in reader.fieldnames or []]
+
+        context['results'] = self._import_rows(reader, company, request.user)
+        return self.render_to_response(context)
+
+    def _import_rows(self, reader, company, user):
+        created = 0
+        errors = []
+
+        default_warehouse = Warehouse.objects.filter(company=company).first()
+        uom_default, _ = UnitOfMeasure.objects.get_or_create(
+            company=company, name="Unidades", defaults={'abbreviation': 'UN'}
+        )
+
+        for line_number, row in enumerate(reader, start=2):  # la fila 1 es el encabezado
+            if not any((value or '').strip() for value in row.values()):
+                continue  # fila vacía (común al final de un export de Excel)
+
+            def get(column):
+                return (row.get(column) or '').strip()
+
+            sku = get('SKU / Código Interno')
+            if not sku:
+                errors.append({'row': line_number, 'message': 'Falta el SKU / Código Interno.'})
+                continue
+
+            if Product.objects.filter(company=company, sku=sku).exists():
+                errors.append({'row': line_number, 'message': f'Ya existe un producto con SKU "{sku}" en esta compañía.'})
+                continue
+
+            try:
+                cost_price = Decimal(get('Precio de Costo').replace(',', '.') or '0')
+                sale_price = Decimal(get('Precio Ventas').replace(',', '.') or '0')
+            except InvalidOperation:
+                errors.append({'row': line_number, 'message': 'Precio de Costo o Precio Ventas inválido.'})
+                continue
+
+            try:
+                min_stock_level = int(get('Nivel Mínimo de Stock') or 0)
+            except ValueError:
+                errors.append({'row': line_number, 'message': 'Nivel Mínimo de Stock inválido.'})
+                continue
+
+            try:
+                initial_stock = int(get('Stock Inicial') or 0)
+            except ValueError:
+                errors.append({'row': line_number, 'message': 'Stock Inicial inválido.'})
+                continue
+
+            try:
+                with transaction.atomic():
+                    brand = None
+                    brand_name = get('Marca (Opcional)')
+                    if brand_name:
+                        brand, _ = Brand.objects.get_or_create(company=company, name=brand_name)
+
+                    provider = None
+                    provider_name = get('Proveedor (Opcional)')
+                    if provider_name:
+                        provider, _ = Provider.objects.get_or_create(company=company, name=provider_name)
+
+                    uom_name = get('Unidad de Medida (UN por default)')
+                    if uom_name:
+                        uom = (
+                            UnitOfMeasure.objects.filter(company=company, abbreviation__iexact=uom_name).first()
+                            or UnitOfMeasure.objects.filter(company=company, name__iexact=uom_name).first()
+                        )
+                        if not uom:
+                            uom = UnitOfMeasure.objects.create(
+                                company=company, name=uom_name, abbreviation=uom_name.upper()[:10]
+                            )
+                    else:
+                        uom = uom_default
+
+                    product = Product.objects.create(
+                        company=company,
+                        name=get('Categoría (Opcional)') or sku,
+                        sku=sku,
+                        barcode=get('Código de Barras / EAN (Opcional)') or None,
+                        brand=brand,
+                        provider=provider,
+                        uom=uom,
+                        cost_price=cost_price,
+                        sale_price=sale_price,
+                        min_stock_level=min_stock_level,
+                        description=get('Descripción opcional') or None,
+                    )
+
+                    if default_warehouse and initial_stock > 0:
+                        WarehouseStock.objects.get_or_create(
+                            product=product,
+                            warehouse=default_warehouse,
+                            defaults={'quantity': initial_stock}
+                        )
+                        StockMovement.objects.create(
+                            company=company,
+                            product=product,
+                            warehouse=default_warehouse,
+                            movement_type='in',
+                            quantity=initial_stock,
+                            user=user,
+                            reason='Importación CSV - Stock inicial',
+                        )
+            except Exception as exc:
+                errors.append({'row': line_number, 'message': f'No se pudo crear el producto ({exc}).'})
+                continue
+
+            created += 1
+
+        return {'created': created, 'errors': errors}
 
