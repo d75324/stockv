@@ -13,6 +13,15 @@
         </a>
     </div>
 
+    {% if status_filter %}
+        <p style="margin-bottom: 1rem;">
+            Mostrando solo: <strong>{{ status_filter_display }}</strong> &middot;
+            <a href="{% url 'sale_list' %}">ver todas</a>
+        </p>
+    {% endif %}
+
+
+
     <table class="table">
         <thead>
             <tr>

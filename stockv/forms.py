@@ -270,10 +270,23 @@ class SaleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         company = kwargs.pop('company', None)
         super().__init__(*args, **kwargs)
+        
+        # El template usa esto para decidir si muestra el combo de depósito
+        # o directamente el nombre (cuando no hay nada para elegir).
+        self.single_warehouse = None
+
+
 
         if company:
-            self.fields['warehouse'].queryset = Warehouse.objects.filter(company=company, is_active=True)
+            #self.fields['warehouse'].queryset = Warehouse.objects.filter(company=company, is_active=True)
+            warehouses = Warehouse.objects.filter(company=company, is_active=True)
+            self.fields['warehouse'].queryset = warehouses
             self.fields['customer'].queryset = Customer.objects.filter(company=company, is_active=True)
+
+            if warehouses.count() == 1:
+                self.single_warehouse = warehouses.first()
+                self.fields['warehouse'].initial = self.single_warehouse.pk
+                self.fields['warehouse'].widget = forms.HiddenInput()
 
         self.fields['customer'].required = False
         self.fields['customer'].empty_label = "Sin Cliente (Opcional)"

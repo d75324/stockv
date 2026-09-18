@@ -54,11 +54,12 @@
             <h3 style="font-size: 2.2rem; color: #d9534f; margin-bottom: 0.5rem;">{{ low_stock_count }}</h3>
             <p style="margin: 0; font-weight: 600;">Productos Bajo Stock Mínimo</p>
         </div>
-
-        <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #f0ad4e;">
-            <h3 style="font-size: 2.2rem; color: #f0ad4e; margin-bottom: 0.5rem;">{{ pending_transfers }}</h3>
-            <p style="margin: 0; font-weight: 600;">Transferencias Pendientes</p>
-        </div>
+        <a href="{% url 'sale_list' %}?status=pending" style="text-decoration: none; color: inherit;"></a>
+            <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #6f42c1;">
+                <h3 style="font-size: 2.2rem; color: #6f42c1; margin-bottom: 0.5rem;">{{ pending_sales }}</h3>
+                <p style="margin: 0; font-weight: 600;">Ventas Pendientes</p>
+            </div>
+        </a>
     </div>
 
     <!-- ============  SECCIÓN DE PRODUCTOS RECIENTES ============ -->

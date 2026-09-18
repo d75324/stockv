@@ -27,9 +27,16 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem;">
             <div style="text-align: left;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">{{ form.warehouse.label }}</label>
-                {{ form.warehouse }}
-                {% if form.warehouse.errors %}<div style="font-size: 0.8rem; color: #dc2626;">{{ form.warehouse.errors.as_text }}</div>{% endif %}
+
+                <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Depósito</label>
+                {% if form.single_warehouse %}
+                    <p style="margin: 0.4rem 0;">{{ form.single_warehouse.name }} ({{ form.single_warehouse.city }})</p>
+                    {{ form.warehouse }}
+                {% else %}
+                    {{ form.warehouse }}
+                    {% if form.warehouse.errors %}<div style="font-size: 0.8rem; color: #dc2626;">{{ form.warehouse.errors.as_text }}</div>{% endif %}
+                {% endif %}
+
             </div>
             <div style="text-align: left;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">{{ form.customer.label }}</label>
