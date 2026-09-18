@@ -83,8 +83,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             # semáforos del dashboard
             context['total_stock_units'] = sum([p.current_stock for p in products])
             context['low_stock_count'] = sum([1 for p in products if p.is_below_min_stock])
-            context['pending_transfers'] = WarehouseTransfer.objects.filter(
-                company=company, 
+            
+            # Ventas pendientes: oportunidades ya cargadas que faltan confirmar/cerrar.
+            context['pending_sales'] = Sale.objects.filter(
+                company=company,
                 status='pending'
             ).count()
             
@@ -93,7 +95,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             context['total_stock_units'] = 0
             context['low_stock_count'] = 0
-            context['pending_transfers'] = 0
+            context['pending_sales'] = 0
             context['product_list'] = []
 
         return context
@@ -756,3 +758,24 @@ class SaleCancelView(LoginRequiredMixin, View):
         return redirect('sale_detail', pk=sale.pk)
 
 
+class ProfileView(LoginRequiredMixin, TemplateView):
+    """
+    Pantalla de solo lectura con los datos del usuario logueado.
+    La edición queda para más adelante: por ahora el botón está deshabilitado.
+    """
+    template_name = 'accounts/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        company = Company.objects.filter(owner=user).first()
+        membership = None
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+
+        context['company'] = company
+        context['membership'] = membership
+        return context

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card" style="max-width: 700px; margin: 2rem auto; padding: 2rem;">
+    <h2>Mi Perfil</h2>
+    <p style="color: var(--muted);">Información de tu cuenta.</p>
+
+    <h3 style="font-size: 1rem; margin: 1.5rem 0 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;">Datos Personales</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; text-align: left;">
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Nombre</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.first_name }} {{ user.last_name }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Correo Electrónico</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.email }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Teléfono</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.phone_number|default:"-" }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">País</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.country|default:"-" }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Ciudad</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.city|default:"-" }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Código Postal</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.zip_code|default:"-" }}</p>
+        </div>
+        <div style="grid-column: 1 / -1;">
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Dirección</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.address|default:"-" }}</p>
+        </div>
+    </div>
+
+    <h3 style="font-size: 1rem; margin: 1.5rem 0 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;">Cuenta</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; text-align: left;">
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Compañía</p>
+            <p style="margin: 0.2rem 0 0;">{{ company.name|default:"Sin empresa asignada" }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Rol</p>
+            <p style="margin: 0.2rem 0 0;">{% if membership %}{{ membership.get_role_display }}{% elif company %}Propietario{% else %}-{% endif %}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Miembro desde</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.date_joined|date:"d/m/Y" }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Última Actividad</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.last_active|date:"d/m/Y H:i"|default:"-" }}</p>
+        </div>
+        <div>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Notificaciones por Email</p>
+            <p style="margin: 0.2rem 0 0;">{{ user.email_notifications_enabled|yesno:"Activadas,Desactivadas" }}</p>
+        </div>
+    </div>
+
+    {% if user.x_url or user.instagram_url or user.facebook_url %}
+        <h3 style="font-size: 1rem; margin: 1.5rem 0 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;">Redes Sociales</h3>
+        <ul style="padding-left: 1.2rem; margin: 0; text-align: left;">
+            {% if user.x_url %}<li><a href="{{ user.x_url }}" target="_blank">X (Twitter)</a></li>{% endif %}
+            {% if user.instagram_url %}<li><a href="{{ user.instagram_url }}" target="_blank">Instagram</a></li>{% endif %}
+            {% if user.facebook_url %}<li><a href="{{ user.facebook_url }}" target="_blank">Facebook</a></li>{% endif %}
+        </ul>
+    {% endif %}
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button type="button" disabled title="Próximamente" style="flex: 1; padding: 0.75rem; background-color: #adb5bd; color: white; border: none; border-radius: 4px; cursor: not-allowed;">
+            Editar Perfil (Próximamente)
+        </button>
+        <a href="{% url 'dashboard' %}" style="flex: 1; text-decoration: none;">
+            <button type="button" style="width: 100%; padding: 0.75rem; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Volver</button>
+        </a>
+    </div>
+</div>
+{% endblock %}
