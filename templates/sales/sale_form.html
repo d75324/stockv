@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card" style="max-width: 900px; margin: 2rem auto; padding: 2rem;">
+    <h2>Nueva Venta</h2>
+    <p>Cargá una o más líneas de producto. La venta queda "pendiente" y reserva el stock hasta que la confirmes.</p>
+
+    {% if form.non_field_errors %}
+        <div style="font-size: 0.85rem; margin-bottom: 1.2rem; color: #dc2626;">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    {% if stock_errors %}
+        <div style="font-size: 0.85rem; margin-bottom: 1.2rem; color: #dc2626;">
+            <ul style="padding-left: 1.2rem; margin: 0;">
+                {% for error in stock_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="POST" id="sale-form">
+        {% csrf_token %}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem;">
+            <div style="text-align: left;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">{{ form.warehouse.label }}</label>
+                {{ form.warehouse }}
+                {% if form.warehouse.errors %}<div style="font-size: 0.8rem; color: #dc2626;">{{ form.warehouse.errors.as_text }}</div>{% endif %}
+            </div>
+            <div style="text-align: left;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">{{ form.customer.label }}</label>
+                {{ form.customer }}
+            </div>
+        </div>
+
+        <div style="text-align: left; margin-bottom: 1.5rem;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">{{ form.notes.label }}</label>
+            {{ form.notes }}
+        </div>
+
+        <h3 style="font-size: 1.05rem; margin-bottom: 0.75rem;">Productos</h3>
+
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+            <div style="font-size: 0.85rem; margin-bottom: 1rem; color: #dc2626;">{{ formset.non_form_errors }}</div>
+        {% endif %}
+
+        <table class="table" id="sale-items-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th style="width: 120px;">Cantidad</th>
+                    <th style="width: 150px;">Precio Unitario</th>
+                    <th style="width: 60px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item_form in formset %}
+                    <tr class="sale-item-row">
+                        <td>
+                            {{ item_form.id }}
+                            {{ item_form.product }}
+                            {% if item_form.product.errors %}<div style="font-size: 0.75rem; color: #dc2626;">{{ item_form.product.errors.as_text }}</div>{% endif %}
+                        </td>
+                        <td>
+                            {{ item_form.quantity }}
+                            {% if item_form.quantity.errors %}<div style="font-size: 0.75rem; color: #dc2626;">{{ item_form.quantity.errors.as_text }}</div>{% endif %}
+                        </td>
+                        <td>{{ item_form.unit_price }}</td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="button" id="add-row" class="btn btn-sm btn-outline-secondary" style="margin-bottom: 1.5rem;">+ Agregar producto</button>
+
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" style="flex: 1; padding: 0.75rem; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar Venta (Pendiente)</button>
+            <a href="{% url 'dashboard' %}" style="flex: 1; text-decoration: none;">
+                <button type="button" style="width: 100%; padding: 0.75rem; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+            </a>
+        </div>
+    </form>
+</div>
+
+{{ product_prices|json_script:"product-prices-data" }}
+<script>
+    (function () {
+        var PRODUCT_PRICES = JSON.parse(document.getElementById('product-prices-data').textContent);
+
+        function bindPriceAutofill(row) {
+            var select = row.querySelector('.sale-item-product');
+            var priceInput = row.querySelector('.sale-item-price');
+            if (!select || !priceInput) return;
+            select.addEventListener('change', function () {
+                var price = PRODUCT_PRICES[this.value];
+                if (price !== undefined) {
+                    priceInput.value = price;
+                }
+            });
+        }
+
+        document.querySelectorAll('.sale-item-row').forEach(bindPriceAutofill);
+
+        document.getElementById('add-row').addEventListener('click', function () {
+            var tbody = document.getElementById('sale-items-table').querySelector('tbody');
+            var totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+            var formIndex = parseInt(totalFormsInput.value, 10);
+
+            var newRow = tbody.querySelector('.sale-item-row').cloneNode(true);
+            newRow.querySelectorAll('input, select').forEach(function (field) {
+                field.name = field.name.replace(/items-\d+-/, 'items-' + formIndex + '-');
+                field.id = field.id.replace(/items-\d+-/, 'items-' + formIndex + '-');
+                if (field.tagName === 'SELECT') {
+                    field.selectedIndex = 0;
+                } else if (field.type === 'checkbox') {
+                    field.checked = false;
+                } else {
+                    field.value = '';
+                }
+            });
+            tbody.appendChild(newRow);
+            bindPriceAutofill(newRow);
+            totalFormsInput.value = formIndex + 1;
+        });
+
+        document.getElementById('sale-items-table').addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-row')) {
+                var rows = document.querySelectorAll('.sale-item-row');
+                if (rows.length > 1) {
+                    e.target.closest('tr').remove();
+                }
+            }
+        });
+    })();
+</script>
+{% endblock %}

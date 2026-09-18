@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 1000px; margin: 2rem auto; padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0;">Ventas</h2>
+        <a href="{% url 'sale_add' %}" style="text-decoration: none;">
+            <button style="padding: 0.5rem 1rem; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            
+                + Nueva Venta
+            
+            </button>
+        </a>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Depósito</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.pk }}</td>
+                    <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ sale.customer.name|default:"-" }}</td>
+                    <td>{{ sale.warehouse.name }}</td>
+                    <td>{{ sale.get_status_display }}</td>
+                    <td>${{ sale.total }}</td>
+                    <td><a href="{% url 'sale_detail' sale.pk %}">Ver</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">Todavía no cargaste ninguna venta.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if is_paginated %}
+        <div style="margin-top: 1rem;">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>{% endif %}
+            <span style="margin: 0 0.5rem;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Siguiente &raquo;</a>{% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

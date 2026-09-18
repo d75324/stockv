@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, LoginForm, DashboardView, RegisterView, CustomLoginView, CustomLogoutView, CompanyRegistrationView, ProductCreateView, ProviderCreateView, ProductRestockView, ProductCSVImportView, ProductCSVSampleView
+from .views import HomeView, LoginForm, DashboardView, RegisterView, CustomLoginView, CustomLogoutView, CompanyRegistrationView, ProductCreateView, ProviderCreateView, ProductRestockView, ProductCSVImportView, ProductCSVSampleView, SaleCreateView, SaleListView, SaleDetailView, SaleConfirmView, SaleCancelView
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -13,5 +13,10 @@ urlpatterns = [
     path('products/<int:pk>/restock/', ProductRestockView.as_view(), name='product_restock'),
     path('products/import/', ProductCSVImportView.as_view(), name='product_csv_import'),
     path('products/import/sample/', ProductCSVSampleView.as_view(), name='product_csv_sample'),
+    path('sales/add/', SaleCreateView.as_view(), name='sale_add'),
+    path('sales/', SaleListView.as_view(), name='sale_list'),
+    path('sales/<int:pk>/', SaleDetailView.as_view(), name='sale_detail'),
+    path('sales/<int:pk>/confirm/', SaleConfirmView.as_view(), name='sale_confirm'),
+    path('sales/<int:pk>/cancel/', SaleCancelView.as_view(), name='sale_cancel'),
 ]
 

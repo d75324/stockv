@@ -1,12 +1,13 @@
-from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm, ProviderForm, ProductRestockForm
-from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement, Provider, Brand
+from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm, ProviderForm, ProductRestockForm, SaleForm, SaleItemFormSet
+from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement, Provider, Brand, Sale, SaleItem, Customer
+from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db import transaction
 from django.http import HttpResponse
 from django.views import View
-from django.views.generic import TemplateView, CreateView, FormView
+from django.views.generic import TemplateView, CreateView, FormView, ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -15,6 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import csv
 import io
 from decimal import Decimal, InvalidOperation
+
 User = get_user_model()
 
 # ================== ENCABEZADO DEL CSV ================== #
@@ -488,7 +490,7 @@ class ProductCSVImportView(LoginRequiredMixin, TemplateView):
 
                     product = Product.objects.create(
                         company=company,
-                        name=get('Categoría (Opcional)') or sku,
+                        name=get('Categoría (Opcional)') or 'Sin categoría',
                         sku=sku,
                         barcode=get('Código de Barras / EAN (Opcional)') or None,
                         brand=brand,
@@ -522,4 +524,226 @@ class ProductCSVImportView(LoginRequiredMixin, TemplateView):
             created += 1
 
         return {'created': created, 'errors': errors}
+
+
+class SaleCreateView(LoginRequiredMixin, CreateView):
+    """
+    Carga de una venta con una o varias líneas de producto.
+    La venta se crea en estado 'pending': con eso alcanza para que
+    Product.reserved_stock / available_stock ya la tengan en cuenta,
+    sin tocar todavía WarehouseStock ni crear StockMovement. Eso recién
+    pasa al confirmarla (ver SaleConfirmView).
+    """
+    model = Sale
+    form_class = SaleForm
+    template_name = 'sales/sale_form.html'
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.get_company()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        company = self.get_company()
+        context['company'] = company
+
+        if 'formset' not in context:
+            if self.request.method == 'POST':
+                context['formset'] = SaleItemFormSet(self.request.POST, form_kwargs={'company': company})
+            else:
+                context['formset'] = SaleItemFormSet(form_kwargs={'company': company})
+
+        context['product_prices'] = {
+            product.id: str(product.sale_price)
+            for product in Product.objects.filter(company=company, is_active=True)
+        }
+        return context
+
+    def form_valid(self, form):
+        company = self.get_company()
+        formset = SaleItemFormSet(self.request.POST, form_kwargs={'company': company})
+
+        if not formset.is_valid():
+            return self.render_to_response(self.get_context_data(form=form, formset=formset))
+
+        # Sumamos cantidades por producto (puede repetirse en más de una línea)
+        # y validamos contra el disponible ANTES de guardar nada: acá es donde
+        # la reserva de stock realmente se hace cumplir.
+        requested = {}
+        for item_form in formset:
+            data = item_form.cleaned_data
+            if not data or data.get('DELETE'):
+                continue
+            product = data['product']
+            requested[product.id] = requested.get(product.id, 0) + data['quantity']
+
+        stock_errors = []
+        for product_id, quantity in requested.items():
+            product = Product.objects.get(pk=product_id)
+            if quantity > product.available_stock:
+                stock_errors.append(
+                    f'No hay suficiente stock disponible de "{product.name}" '
+                    f'(pedido: {quantity}, disponible: {product.available_stock}).'
+                )
+
+        if stock_errors:
+            return self.render_to_response(
+                self.get_context_data(form=form, formset=formset, stock_errors=stock_errors)
+            )
+
+        with transaction.atomic():
+            form.instance.company = company
+            form.instance.created_by = self.request.user
+            form.instance.status = 'pending'
+            self.object = form.save()
+
+            formset.instance = self.object
+            formset.save()
+
+        return redirect('sale_detail', pk=self.object.pk)
+
+
+class SaleListView(LoginRequiredMixin, ListView):
+    model = Sale
+    template_name = 'sales/sale_list.html'
+    context_object_name = 'sales'
+    paginate_by = 20
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_queryset(self):
+        return Sale.objects.filter(company=self.get_company()).select_related('customer', 'warehouse')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company'] = self.get_company()
+        return context
+
+
+class SaleDetailView(LoginRequiredMixin, DetailView):
+    model = Sale
+    template_name = 'sales/sale_detail.html'
+    context_object_name = 'sale'
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_queryset(self):
+        return Sale.objects.filter(company=self.get_company())
+
+
+class SaleConfirmView(LoginRequiredMixin, View):
+    """
+    Confirma una venta pendiente: recién acá se descuenta stock físico
+    de WarehouseStock y se deja un StockMovement ('out') por cada línea.
+    Antes de tocar nada, revalida que el stock físico siga alcanzando
+    (pudo haber salido por otra vía entre que se cargó y se confirmó).
+    """
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def post(self, request, pk, *args, **kwargs):
+        company = self.get_company()
+        sale = get_object_or_404(Sale, pk=pk, company=company)
+
+        if sale.status != 'pending':
+            return redirect('sale_detail', pk=sale.pk)
+
+        items = list(sale.items.select_related('product'))
+        stocks = {}
+        shortages = []
+        for item in items:
+            stock, _ = WarehouseStock.objects.get_or_create(
+                product=item.product, warehouse=sale.warehouse, defaults={'quantity': 0}
+            )
+            stocks[item.id] = stock
+            if stock.quantity < item.quantity:
+                shortages.append(f'{item.product.name} (disponible: {stock.quantity}, pedido: {item.quantity})')
+
+        if shortages:
+            messages.error(
+                request,
+                'No se pudo confirmar la venta, falta stock físico de: ' + '; '.join(shortages)
+            )
+            return redirect('sale_detail', pk=sale.pk)
+
+        with transaction.atomic():
+            for item in items:
+                stock = stocks[item.id]
+                stock.quantity -= item.quantity
+                stock.save(update_fields=['quantity'])
+
+                StockMovement.objects.create(
+                    company=company,
+                    product=item.product,
+                    warehouse=sale.warehouse,
+                    movement_type='out',
+                    quantity=item.quantity,
+                    user=request.user,
+                    reason=f'Venta #{sale.pk}',
+                )
+
+            sale.status = 'confirmed'
+            sale.confirmed_at = timezone.now()
+            sale.save(update_fields=['status', 'confirmed_at'])
+
+        messages.success(request, 'Venta confirmada. Se descontó el stock correspondiente.')
+        return redirect('sale_detail', pk=sale.pk)
+
+
+class SaleCancelView(LoginRequiredMixin, View):
+    """
+    Cancela una venta pendiente. No hay que tocar WarehouseStock: en 'pending'
+    nunca se llegó a descontar stock físico, solo dejaba de contar como
+    disponible mientras existía la reserva.
+    """
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def post(self, request, pk, *args, **kwargs):
+        company = self.get_company()
+        sale = get_object_or_404(Sale, pk=pk, company=company)
+
+        if sale.status == 'pending':
+            sale.status = 'cancelled'
+            sale.save(update_fields=['status'])
+            messages.info(request, 'Venta cancelada. Se liberó el stock reservado.')
+
+        return redirect('sale_detail', pk=sale.pk)
+
 

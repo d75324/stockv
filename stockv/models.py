@@ -205,11 +205,29 @@ class Product(models.Model):
 			return total
 		return 0
 
+	# cuánto de ese stock ya está comprometido en ventas pendientes (todavía no confirmadas)
+	@property
+	def reserved_stock(self):
+		result = self.sale_items.filter(sale__status='pending').aggregate(
+			total = Sum('quantity')
+		)
+		total = result['total']
+		if total is not None:
+			return total
+		return 0
+
+	# lo que realmente se puede seguir vendiendo: físico menos reservado
+	@property
+	def available_stock(self):
+		return self.current_stock - self.reserved_stock
+
 	# verificamos nivel de stock
 	@property
 	def is_below_min_stock(self):
 	# Variable de quiebre de stock: verifica si el total está por debajo del mínimo.
-		return self.current_stock < self.min_stock_level # compara y retorna True o False
+		#return self.current_stock < self.min_stock_level # compara y retorna True o False
+		return self.available_stock < self.min_stock_level # compara y retorna True o False
+  
 
 	# --- status y tracking ---
 	# usamos is_active para "borrar" lógicamente un producto sin perder el historial de pedidos asociados.
@@ -612,3 +630,110 @@ class Provider(models.Model):
 		# return (self.credit_limit - credit_used) >= amount
 		return True  # Placeholder
 
+
+class Customer(models.Model):
+	# --- MODELO CLIENTES: identidad y multitenant ---
+	# Versión liviana a propósito (a diferencia de Provider): se agrega ahora para no
+	# tener que migrar Sale más adelante, aunque todavía no se use mucho.
+	company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='customers')
+	name = models.CharField(max_length=200, verbose_name="Nombre del Cliente")
+	code = models.CharField(max_length=20, blank=True, null=True, verbose_name="Código de Cliente")
+	tax_id = models.CharField(max_length=50, blank=True, null=True, verbose_name="RUT / NIT / CUIT")
+	email = models.EmailField(blank=True, null=True, verbose_name="Correo Electrónico")
+	phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono")
+	address = models.TextField(blank=True, null=True, verbose_name="Dirección")
+	city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ciudad")
+
+	# --- status y logs ---
+	is_active = models.BooleanField(default=True, verbose_name="Activo")
+	notes = models.TextField(blank=True, null=True, verbose_name="Notas Internas")
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		verbose_name = "Cliente"
+		verbose_name_plural = "Clientes"
+		constraints = [
+			models.UniqueConstraint(
+				fields=['company', 'name'],
+				name='unique_company_customer_name'
+			),
+			models.UniqueConstraint(
+				fields=['company', 'tax_id'],
+				name='unique_company_customer_tax_id',
+				condition=models.Q(tax_id__isnull=False)  # Solo si tax_id no es null
+			),
+		]
+		ordering = ['name']
+
+	def __str__(self):
+		return self.name
+
+
+class Sale(models.Model):
+	# --- MODELO VENTAS: cabecera del pedido/ticket ---
+	# 'pending'   -> reserva stock (cuenta en Product.reserved_stock) pero todavía no lo descuenta
+	# 'confirmed' -> ya se descontó WarehouseStock y se generó el StockMovement de salida
+	# 'cancelled' -> se liberó la reserva sin tocar stock físico (nunca llegó a descontarse)
+	STATUS_CHOICES = [
+		('pending', 'Pendiente'),
+		('confirmed', 'Confirmada'),
+		('cancelled', 'Cancelada'),
+	]
+
+	company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='sales')
+	# PROTECT: no queremos perder el historial de ventas si se borra un depósito
+	warehouse = models.ForeignKey('Warehouse', on_delete=models.PROTECT, related_name='sales', verbose_name="Depósito")
+	customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, blank=True, related_name='sales', verbose_name="Cliente")
+	status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending', verbose_name="Estado")
+
+	created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='sales_created', verbose_name="Cargada por")
+	created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+	confirmed_at = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de Confirmación")
+	updated_at = models.DateTimeField(auto_now=True, verbose_name="Última Actualización")
+	notes = models.TextField(blank=True, null=True, verbose_name="Notas")
+
+	class Meta:
+		verbose_name = "Venta"
+		verbose_name_plural = "Ventas"
+		ordering = ['-created_at']
+		indexes = [
+			models.Index(fields=['company', 'status']),
+		]
+
+	def __str__(self):
+		return f"Venta #{self.pk or 'sin guardar'} ({self.get_status_display()})"
+
+	# El total se calcula a partir de las líneas, nunca se guarda en un campo:
+	# así nunca puede desincronizarse de lo que realmente está cargado en la venta.
+	@property
+	def total(self):
+		return sum((item.subtotal for item in self.items.all()), Decimal('0.00'))
+
+
+class SaleItem(models.Model):
+	# --- MODELO VENTAS: líneas del pedido/ticket ---
+	sale = models.ForeignKey('Sale', on_delete=models.CASCADE, related_name='items')
+	# PROTECT: no queremos perder el historial de ventas si se borra un producto
+	product = models.ForeignKey('Product', on_delete=models.PROTECT, related_name='sale_items')
+	quantity = models.PositiveIntegerField(verbose_name="Cantidad")
+	# Precio al momento de la venta: NO se referencia product.sale_price en vivo,
+	# porque si el precio cambia después no queremos reescribir ventas ya cargadas.
+	unit_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Precio Unitario")
+
+	class Meta:
+		verbose_name = "Línea de Venta"
+		verbose_name_plural = "Líneas de Venta"
+		constraints = [
+			models.UniqueConstraint(
+				fields=['sale', 'product'],
+				name='unique_sale_product'
+			),
+		]
+
+	def __str__(self):
+		return f"{self.product.name} x{self.quantity} en Venta #{self.sale_id}"
+
+	@property
+	def subtotal(self):
+		return self.quantity * self.unit_price

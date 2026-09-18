@@ -253,3 +253,70 @@ class ProductRestockForm(forms.Form):
             self.fields['cost_price'].initial = product.cost_price
 
 
+class SaleForm(forms.ModelForm):
+    """
+    Cabecera de la venta. El estado siempre arranca en 'pending' (se fija
+    en la vista, no acá) para que la reserva de stock funcione desde el vamos.
+    """
+    class Meta:
+        model = Sale
+        fields = ['warehouse', 'customer', 'notes']
+        widgets = {
+            'warehouse': forms.Select(attrs={'class': 'form-control'}),
+            'customer': forms.Select(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Notas (Opcional)', 'rows': 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company', None)
+        super().__init__(*args, **kwargs)
+
+        if company:
+            self.fields['warehouse'].queryset = Warehouse.objects.filter(company=company, is_active=True)
+            self.fields['customer'].queryset = Customer.objects.filter(company=company, is_active=True)
+
+        self.fields['customer'].required = False
+        self.fields['customer'].empty_label = "Sin Cliente (Opcional)"
+        self.fields['notes'].required = False
+
+
+class SaleItemForm(forms.ModelForm):
+    """
+    Una línea de la venta. unit_price viaja como campo editable: se
+    autocompleta por JS con el precio de venta actual del producto elegido,
+    pero queda como una copia (no una referencia) apenas se guarda la línea.
+    """
+    class Meta:
+        model = SaleItem
+        fields = ['product', 'quantity', 'unit_price']
+        widgets = {
+            'product': forms.Select(attrs={'class': 'form-control sale-item-product'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control sale-item-quantity', 'min': 1}),
+            'unit_price': forms.NumberInput(attrs={'class': 'form-control sale-item-price', 'step': '0.01'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company', None)
+        super().__init__(*args, **kwargs)
+
+        if company:
+            self.fields['product'].queryset = Product.objects.filter(company=company, is_active=True)
+
+        self.fields['product'].empty_label = "Seleccioná un producto"
+
+
+# Formset: una Sale con muchas SaleItem cargadas en la misma pantalla.
+# min_num=1 + validate_min=True para que la venta tenga al menos una línea.
+# OJO: Django renderiza max(initial, min_num) + extra filas vacías, así que con
+# min_num=1 ya alcanza para la primera fila; extra=0 evita una segunda de más.
+SaleItemFormSet = forms.inlineformset_factory(
+    Sale,
+    SaleItem,
+    form=SaleItemForm,
+    extra=0,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)
+
+

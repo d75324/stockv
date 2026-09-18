@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
+    <h2>Venta #{{ sale.pk }}</h2>
+    <p>
+        Estado: <strong>{{ sale.get_status_display }}</strong> &middot;
+        Depósito: {{ sale.warehouse.name }} &middot;
+        Cliente: {{ sale.customer.name|default:"Sin cliente" }}
+    </p>
+    {% if sale.notes %}<p style="color: var(--muted);">{{ sale.notes }}</p>{% endif %}
+
+    <table class="table" style="margin-top: 1.5rem;">
+        <thead>
+            <tr><th>Producto</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+            {% for item in sale.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.unit_price }}</td>
+                    <td>${{ item.subtotal }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr><th colspan="3" style="text-align: right;">Total</th><th>${{ sale.total }}</th></tr>
+        </tfoot>
+    </table>
+
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        {% if sale.status == 'pending' %}
+            <form method="POST" action="{% url 'sale_confirm' sale.pk %}" style="flex: 1;">
+                {% csrf_token %}
+                <button type="submit" style="width: 100%; padding: 0.75rem; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Confirmar Venta</button>
+            </form>
+            <form method="POST" action="{% url 'sale_cancel' sale.pk %}" style="flex: 1;">
+                {% csrf_token %}
+                <button type="submit" style="width: 100%; padding: 0.75rem; background-color: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar Venta</button>
+            </form>
+        {% endif %}
+        <a href="{% url 'sale_list' %}" style="flex: 1; text-decoration: none;">
+            <button type="button" style="width: 100%; padding: 0.75rem; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Volver</button>
+        </a>
+    </div>
+</div>
+{% endblock %}
