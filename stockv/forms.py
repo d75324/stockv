@@ -258,6 +258,32 @@ class SaleForm(forms.ModelForm):
     Cabecera de la venta. El estado siempre arranca en 'pending' (se fija
     en la vista, no acá) para que la reserva de stock funcione desde el vamos.
     """
+    # Campos "sueltos" (no son de Sale): permiten cargar un cliente nuevo sin
+    # salir de esta pantalla. Si vienen completos, la vista los usa para crear
+    # el Customer y lo asigna a la venta, ignorando lo elegido en el combo.
+    new_customer_name = forms.CharField(
+        required=False,
+        label="Nombre del Cliente Nuevo",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre y apellido / Razón social'})
+    )
+    new_customer_document = forms.CharField(
+        required=False,
+        label="Documento (Opcional)",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CI / RUT / DNI (Opcional)'})
+    )
+    # Campos "sueltos" (no son de Sale): permiten cargar un cliente nuevo sin
+    # salir de esta pantalla. Si vienen completos, la vista los usa para crear
+    # el Customer y lo asigna a la venta, ignorando lo elegido en el combo.
+    new_customer_name = forms.CharField(
+        required=False,
+        label="Nombre del Cliente Nuevo",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre y apellido / Razón social'})
+    )
+    new_customer_document = forms.CharField(
+        required=False,
+        label="Documento (Opcional)",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CI / RUT / DNI (Opcional)'})
+    )
     class Meta:
         model = Sale
         fields = ['warehouse', 'customer', 'notes']

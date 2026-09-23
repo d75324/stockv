@@ -15,7 +15,7 @@
                 <a href="#" style="font-size: 0.85rem; text-decoration: underline; margin-left: 0.5rem;">(Gestionar Depósitos)</a>
             </p>
         </div>
-        
+
         <!-- Botones de Carga de Productos -->
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
             <a href="{% url 'product_add' %}" style="text-decoration: none;">
@@ -44,18 +44,16 @@
 
     <!-- Fila de Semáforos -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-        
+
         <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #44c7e8;">
             <h3 style="font-size: 2.2rem; color: #333; margin-bottom: 0.5rem;">{{ total_stock_units }}</h3>
             <p style="margin: 0; font-weight: 600;">Unidades Totales en Stock</p>
         </div>
 
-        <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #f6a39d;">
+        <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #f6a39d; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#lowStockModal">
             <h3 style="font-size: 2.2rem; color: #d9534f; margin-bottom: 0.5rem;">{{ low_stock_count }}</h3>
             <p style="margin: 0; font-weight: 600;">Productos Bajo Stock Mínimo</p>
         </div>
-
-         <!-- PROBABLE ERROR AQUI  -->
 
         <a href="{% url 'sale_list' %}?status=pending" style="text-decoration: none; color: inherit;">
             <div class="card" style="max-width: 100%; text-align: center; border-left: 5px solid #6f42c1;">
@@ -77,9 +75,47 @@
         <!-- ============  T A B L A ============ -->
         <div style="overflow-x: auto;">
             {% include 'includes/_stock_table.html' %}
-        </div>        
+        </div>
         <!-- ============ FIN DE TABLA ============ -->
     </div>
 
+</div>
+
+<!-- Modal: detalle de productos bajo stock mínimo -->
+<div class="modal fade" id="lowStockModal" tabindex="-1" aria-labelledby="lowStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lowStockModalLabel">Productos Bajo Stock Mínimo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                {% if low_stock_products %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>SKU</th>
+                                <th>Disponible</th>
+                                <th>Mínimo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in low_stock_products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.sku|default:"-" }}</td>
+                                    <td>{{ product.available_stock }}</td>
+                                    <td>{{ product.min_stock_level }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="margin: 0;">No hay productos bajo el stock mínimo. 🎉</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

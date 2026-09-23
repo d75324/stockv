@@ -81,8 +81,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             products = Product.objects.filter(company=company, is_active=True)
             
             # semáforos del dashboard
+            # context['total_stock_units'] = sum([p.current_stock for p in products])
             context['total_stock_units'] = sum([p.current_stock for p in products])
-            context['low_stock_count'] = sum([1 for p in products if p.is_below_min_stock])
+            low_stock_products = [p for p in products if p.is_below_min_stock]
+            context['low_stock_count'] = len(low_stock_products)
+            context['low_stock_products'] = low_stock_products
             
             # Ventas pendientes: oportunidades ya cargadas que faltan confirmar/cerrar.
             context['pending_sales'] = Sale.objects.filter(
@@ -95,6 +98,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             context['total_stock_units'] = 0
             context['low_stock_count'] = 0
+            context['low_stock_products'] = []
             context['pending_sales'] = 0
             context['product_list'] = []
 
@@ -607,6 +611,18 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
             form.instance.company = company
             form.instance.created_by = self.request.user
             form.instance.status = 'pending'
+
+            # Si se cargó un cliente nuevo, tiene prioridad sobre lo elegido
+            # en el combo (el template los muestra como mutuamente excluyentes).
+            new_customer_name = form.cleaned_data.get('new_customer_name', '').strip()
+            if new_customer_name:
+                customer, _ = Customer.objects.get_or_create(
+                    company=company,
+                    name=new_customer_name,
+                    defaults={'tax_id': form.cleaned_data.get('new_customer_document', '').strip() or None}
+                )
+                form.instance.customer = customer
+
             self.object = form.save()
 
             formset.instance = self.object

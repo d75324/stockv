@@ -9,56 +9,56 @@
     <h3 style="font-size: 1rem; margin: 1.5rem 0 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;">Datos Personales</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; text-align: left;">
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Nombre</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.first_name }} {{ user.last_name }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Nombre</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.first_name }} {{ user.last_name }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Correo Electrónico</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.email }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Correo Electrónico</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.email }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Teléfono</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.phone_number|default:"-" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Teléfono</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.phone_number|default:"-" }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">País</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.country|default:"-" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">País</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.country|default:"-" }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Ciudad</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.city|default:"-" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Ciudad</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.city|default:"-" }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Código Postal</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.zip_code|default:"-" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Código Postal</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.zip_code|default:"-" }}</p>
         </div>
         <div style="grid-column: 1 / -1;">
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Dirección</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.address|default:"-" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Dirección</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.address|default:"-" }}</p>
         </div>
     </div>
 
     <h3 style="font-size: 1rem; margin: 1.5rem 0 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;">Cuenta</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; text-align: left;">
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Compañía</p>
-            <p style="margin: 0.2rem 0 0;">{{ company.name|default:"Sin empresa asignada" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Compañía</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ company.name|default:"Sin empresa asignada" }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Rol</p>
-            <p style="margin: 0.2rem 0 0;">{% if membership %}{{ membership.get_role_display }}{% elif company %}Propietario{% else %}-{% endif %}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Rol</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{% if membership %}{{ membership.get_role_display }}{% elif company %}Propietario{% else %}-{% endif %}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Miembro desde</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.date_joined|date:"d/m/Y" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Miembro desde</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.date_joined|date:"d/m/Y" }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Última Actividad</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.last_active|date:"d/m/Y H:i"|default:"-" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Última Actividad</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.last_active|date:"d/m/Y H:i"|default:"-" }}</p>
         </div>
         <div>
-            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Notificaciones por Email</p>
-            <p style="margin: 0.2rem 0 0;">{{ user.email_notifications_enabled|yesno:"Activadas,Desactivadas" }}</p>
+            <p style="margin: 0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);">Notificaciones por Email</p>
+            <p style="margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; color: var(--text);">{{ user.email_notifications_enabled|yesno:"Activadas,Desactivadas" }}</p>
         </div>
     </div>
 

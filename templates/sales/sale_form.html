@@ -39,8 +39,18 @@
 
             </div>
             <div style="text-align: left;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">{{ form.customer.label }}</label>
-                {{ form.customer }}
+                <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Cliente</label>
+
+                <div id="customer-existing-block">
+                    {{ form.customer }}
+                    <a href="#" id="toggle-new-customer" style="font-size: 0.8rem; display: inline-block; margin-top: 0.4rem;">+ Cliente nuevo</a>
+                </div>
+
+                <div id="customer-new-block" style="display: none;">
+                    {{ form.new_customer_name }}
+                    <div style="margin-top: 0.5rem;">{{ form.new_customer_document }}</div>
+                    <a href="#" id="toggle-existing-customer" style="font-size: 0.8rem; display: inline-block; margin-top: 0.4rem;">Elegir cliente existente</a>
+                </div>
             </div>
         </div>
 
@@ -144,6 +154,35 @@
                 }
             }
         });
+
+        // ---- Toggle cliente existente <-> cliente nuevo ----
+        var existingBlock = document.getElementById('customer-existing-block');
+        var newBlock = document.getElementById('customer-new-block');
+        var customerSelect = document.getElementById('id_customer');
+        var newNameInput = document.getElementById('id_new_customer_name');
+        var newDocInput = document.getElementById('id_new_customer_document');
+
+        document.getElementById('toggle-new-customer').addEventListener('click', function (e) {
+            e.preventDefault();
+            existingBlock.style.display = 'none';
+            newBlock.style.display = 'block';
+            if (customerSelect) customerSelect.value = '';
+        });
+
+        document.getElementById('toggle-existing-customer').addEventListener('click', function (e) {
+            e.preventDefault();
+            newBlock.style.display = 'none';
+            existingBlock.style.display = 'block';
+            newNameInput.value = '';
+            newDocInput.value = '';
+        });
+
+        // Si venimos de un re-render con errores y ya había datos de cliente nuevo,
+        // mostramos ese bloque en vez del combo para no perder lo que se tipeó.
+        if (newNameInput.value || newDocInput.value) {
+            existingBlock.style.display = 'none';
+            newBlock.style.display = 'block';
+        }
     })();
 </script>
 {% endblock %}
