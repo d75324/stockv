@@ -1,20 +1,205 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/landed.css' %}">
+{% endblock %}
+
+{% block body_class %}bg-home{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center mt-5">
-  <div class="card text-center">
-    <h3>Página en Construcción</h3><br><br>
+
+<!-- ================== HERO ================== -->
+<section class="lp-hero">
+  <div class="lp-badges">
+    <span class="lp-badge lp-badge-dev">En desarrollo</span>
+    <span class="lp-badge lp-badge-free">100% gratuito</span>
   </div>
-</div>
-<br>
-<hr><hr>
-<br>
-<div class="d-flex justify-content-center mt-5">
-  <div class="card text-center">
-    <a href="{% url 'login' %}" class="btn-style">
-      Login
-    </a>
+
+  <h1 class="lp-title">Tu stock, ordenado.<br>Sin planillas, sin costo.</h1>
+
+  <p class="lp-lead">
+    <strong>StockV</strong> es una aplicación web de control de stock pensada para pequeñas y
+    medianas empresas. Llevá tus productos, proveedores y ventas en un solo lugar,
+    de manera simple y ordenada.
+  </p>
+
+  <div class="lp-actions">
+    <a href="{% url 'register' %}" class="lp-btn lp-btn-primary">Crear cuenta gratis</a>
+    <a href="{% url 'login' %}" class="lp-btn lp-btn-ghost">Ya tengo cuenta</a>
+
+
   </div>
-</div>
+</section>
+
+<!-- ================== FUNCIONALIDADES ================== -->
+<section class="lp-section">
+  <h2 class="lp-section-title">Todo lo que necesitás para gestionar tu negocio</h2>
+
+  <div class="lp-grid">
+    <article class="lp-feature">
+      <div class="lp-icon">📦</div>
+      <h3>Control de stock</h3>
+      <p>Stock disponible en tiempo real, reposición de productos y alerta cuando un artículo baja de su nivel mínimo.</p>
+    </article>
+
+    <article class="lp-feature">
+      <div class="lp-icon">🚚</div>
+      <h3>Proveedores</h3>
+      <p>Registrá a tus proveedores y asociá cada producto a quien te lo vende para reponer sin perder tiempo.</p>
+    </article>
+
+    <article class="lp-feature">
+      <div class="lp-icon">🧾</div>
+      <h3>Ventas y notas de pedido</h3>
+      <p>Cargá ventas, confirmalas o cancelalas, y el stock se actualiza solo. Registrá clientes si lo necesitás.</p>
+    </article>
+
+    <article class="lp-feature">
+      <div class="lp-icon">📄</div>
+      <h3>Carga masiva por CSV</h3>
+      <p>¿Tenés tus productos en una planilla? Descargá la plantilla de ejemplo e importá todo tu catálogo de una vez.</p>
+    </article>
+
+    <article class="lp-feature">
+      <div class="lp-icon">🏬</div>
+      <h3>Depósitos</h3>
+      <p>Organizá la mercadería por depósito y seguí cada movimiento de entrada y salida.</p>
+    </article>
+
+    <article class="lp-feature">
+      <div class="lp-icon">📊</div>
+      <h3>Dashboard</h3>
+      <p>Un panel con lo importante a primera vista: productos con poco stock y ventas pendientes de confirmar.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ================== CÓMO FUNCIONA ================== -->
+<section class="lp-section">
+  <h2 class="lp-section-title">Empezá en 3 pasos</h2>
+
+  <ol class="lp-steps">
+    <li>
+      <span class="lp-step-num">1</span>
+      <div>
+        <h3>Registrate</h3>
+        <p>Creá tu usuario y los datos de tu empresa en un par de minutos.</p>
+      </div>
+    </li>
+    <li>
+      <span class="lp-step-num">2</span>
+      <div>
+        <h3>Cargá tus productos</h3>
+        <p>Uno por uno o todos juntos con un archivo CSV.</p>
+      </div>
+    </li>
+    <li>
+      <span class="lp-step-num">3</span>
+      <div>
+        <h3>Vendé y controlá</h3>
+        <p>Registrá tus ventas y dejá que StockV lleve las cuentas por vos.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- ================== POR QUÉ STOCKV ================== -->
+<section class="lp-section lp-why">
+  <div class="lp-why-item">
+    <strong>Gratis</strong>
+    <span>Sin costo, sin tarjeta de crédito.</span>
+  </div>
+  <div class="lp-why-item">
+    <strong>Web</strong>
+    <span>Sin instalar nada: entrás desde el navegador.</span>
+  </div>
+  <div class="lp-why-item">
+    <strong>Simple</strong>
+    <span>Pensado para quien no tiene tiempo de aprender un sistema complejo.</span>
+  </div>
+</section>
+
+<!-- ================== EN DESARROLLO / PRÓXIMAMENTE ================== -->
+<section class="lp-section">
+  <div class="lp-roadmap">
+    <h2 class="lp-section-title">Un proyecto en constante evolución</h2>
+    <p class="lp-roadmap-text">
+      StockV crece todo el tiempo. Estas son algunas de las funciones en las que estamos trabajando:
+    </p>
+
+
+
+    <div class="lp-roadmap-grid">
+      <div class="lp-roadmap-item">
+        <span class="lp-roadmap-icon">🔄</span>
+        Transferencias de mercadería entre depósitos
+      </div>
+      <div class="lp-roadmap-item">
+        <span class="lp-roadmap-icon">↩️</span>
+        Devoluciones y garantías
+      </div>
+      <div class="lp-roadmap-item">
+        <span class="lp-roadmap-icon">👥</span>
+        Roles y permisos para tu equipo
+      </div>
+      <div class="lp-roadmap-item">
+        <span class="lp-roadmap-icon">📈</span>
+        Reportes de ventas y exportación de datos
+      </div>
+    </div>
+
+
+
+    <div class="lp-feedback">
+      <!-- 
+      Campos: los name (nombre, email, telefono, comentario) son los títulos que vas a ver en el mail. Nombre, Email y Comentario son obligatorios; Teléfono es opcional. Como el campo se llama email, el mail de respuesta va a la dirección de quien escribió.
+      Asunto: _subject define el asunto del mail que llega.
+      Anti-spam: _gotcha es un campo oculto que Formspree usa para descartar bots. El usuario no lo ve.
+      Tokens de Django: este formulario no necesita {% csrf_token %}, porque se envía a Formspree y no al servidor.
+      -->
+      <p class="lp-roadmap-text">¿Tenés una idea o encontraste algo para mejorar?</p>
+      <form class="lp-form" action="https://formspree.io/f/xljdpqpv" method="POST">
+        <input type="hidden" name="_subject" value="Nuevo mensaje desde la landing de StockV">
+
+        <div class="lp-field">
+          <label for="fs-nombre">Nombre</label>
+          <input type="text" id="fs-nombre" name="nombre" required>
+        </div>
+
+        <div class="lp-field">
+          <label for="fs-email">Email</label>
+          <input type="email" id="fs-email" name="email" required>
+        </div>
+
+        <div class="lp-field">
+          <label for="fs-telefono">Teléfono <span class="lp-optional">(si querés que te llamemos)</span></label>
+          <input type="tel" id="fs-telefono" name="telefono">
+        </div>
+
+        <div class="lp-field lp-field-full">
+          <label for="fs-comentario">Comentario</label>
+          <textarea id="fs-comentario" name="comentario" rows="2" required></textarea>
+        </div>
+
+        <!-- Anti-spam: campo oculto que solo completan los bots -->
+        <input type="text" name="_gotcha" class="lp-honeypot" tabindex="-1" autocomplete="off">
+
+        <button type="submit" class="lp-btn lp-btn-primary lp-field-full">ESCRIBIME!</button>
+      </form>
+      <p class="lp-roadmap-text lp-small">Tu opinión nos ayuda a definir qué sigue.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================== CTA FINAL ================== -->
+<section class="lp-cta">
+  <h2>¿Listo para ordenar tu stock?</h2>
+  <a href="{% url 'register' %}" class="lp-btn lp-btn-primary">Crear cuenta gratis</a>
+</section>
+
+<footer class="lp-footer">
+  StockV · Control de stock para PyMEs · {% now "Y" %}
+</footer>
 
 {% endblock %}
