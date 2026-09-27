@@ -1,0 +1,362 @@
+/* === LANDING (home) === */
+
+/* Fondo azul claro liso, solo para el home */
+body.bg-home{
+  background: #85bee2;
+}
+
+.lp-hero{
+  text-align: center;
+  padding: 4.5rem 1rem 3.5rem;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.lp-badges{
+  display: flex;
+  gap: .5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+
+.lp-badge{
+  font-size: .8rem;
+  font-weight: 600;
+  padding: .35rem .85rem;
+  border-radius: 999px;
+  letter-spacing: .02em;
+}
+
+.lp-badge-dev{
+  background: #fff4d6;
+  color: #9a6b00;
+}
+
+.lp-badge-free{
+  background: #dff7e8;
+  color: #1f7a45;
+}
+
+.lp-title{
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #1f3b57;
+  margin-bottom: 1.2rem;
+}
+
+.lp-lead{
+  font-size: 1.1rem;
+  color: #4a6178;
+  margin-bottom: 2rem;
+}
+
+.lp-actions{
+  display: flex;
+  gap: .8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lp-btn{
+  display: inline-block;
+  padding: .85rem 1.6rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease, transform .1s ease;
+}
+
+.lp-btn:active{
+  transform: scale(.98);
+}
+
+.lp-btn-primary{
+  background: #1f8fce;
+  color: #fff;
+}
+
+.lp-btn-primary:hover{
+  background: #1677ad;
+  color: #fff;
+}
+
+.lp-btn-ghost{
+  background: rgba(255,255,255,.7);
+  color: #1f3b57;
+  border: 1px solid rgba(31,59,87,.15);
+}
+
+.lp-btn-ghost:hover{
+  background: #fff;
+  color: #1f8fce;
+}
+
+.lp-section{
+  padding: 2.5rem 0;
+}
+
+.lp-section-title{
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f3b57;
+  margin-bottom: 2rem;
+}
+
+.lp-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+
+@media (max-width: 991px){
+  .lp-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 575px){
+  .lp-grid{ grid-template-columns: 1fr; }
+}
+
+.lp-feature,
+.lp-roadmap,
+.lp-why-item,
+.lp-steps li{
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(31,59,87,.08);
+}
+
+.lp-feature{
+  padding: 1.6rem;
+}
+
+.lp-icon{
+  font-size: 1.8rem;
+  margin-bottom: .6rem;
+}
+
+.lp-feature h3,
+.lp-steps h3{
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f3b57;
+  margin-bottom: .4rem;
+}
+
+.lp-feature p,
+.lp-steps p{
+  color: #5a6f84;
+  margin: 0;
+  font-size: .95rem;
+}
+
+.lp-steps{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.2rem;
+}
+
+.lp-steps li{
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.4rem;
+}
+
+.lp-step-num{
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: #1f8fce;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-why{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.2rem;
+}
+
+.lp-why-item{
+  padding: 1.4rem;
+  text-align: center;
+}
+
+.lp-why-item strong{
+  display: block;
+  font-size: 1.3rem;
+  color: #1f8fce;
+  margin-bottom: .3rem;
+}
+
+.lp-why-item span{
+  color: #5a6f84;
+  font-size: .95rem;
+}
+
+.lp-roadmap{
+  max-width: none;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.lp-roadmap .lp-section-title{
+  margin-bottom: 1rem;
+}
+
+.lp-roadmap-text{
+  color: #4a6178;
+  text-align: center;
+}
+
+.lp-roadmap-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1.2rem 0 0;
+}
+
+.lp-roadmap-item{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  text-align: center;
+  padding: 1rem .8rem;
+  border-radius: 12px;
+  background: #eaf5fd;
+  border: 1px solid rgba(31,143,206,.15);
+  color: #1f3b57;
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+.lp-roadmap-icon{
+  font-size: 1.4rem;
+}
+
+@media (max-width: 991px){
+  .lp-roadmap-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 575px){
+  .lp-roadmap-grid{ grid-template-columns: 1fr; }
+}
+
+.lp-small{
+  font-size: .9rem;
+  margin: 0;
+}
+
+.lp-cta{
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+
+.lp-cta h2{
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f3b57;
+  margin-bottom: 1.2rem;
+}
+
+.lp-footer{
+  text-align: center;
+  color: #6b8196;
+  font-size: .85rem;
+  padding: 1.5rem 0 2rem;
+  border-top: 1px solid rgba(31,59,87,.1);
+}
+
+/* === "Escribime" dentro del roadmap === */
+.lp-feedback{
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(31,59,87,.1);
+}
+
+.lp-feedback .lp-roadmap-text{
+  margin-bottom: .9rem;
+}
+
+.lp-feedback .lp-small{
+  margin: .9rem 0 0;
+}
+
+/* Formulario de contacto (Formspree) */
+.lp-form{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 1rem;
+  text-align: left;
+}
+
+.lp-field-full{
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 767px){
+  .lp-form{ grid-template-columns: 1fr; }
+}
+
+.lp-form label{
+  display: block;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #1f3b57;
+  margin-bottom: .25rem;
+}
+
+.lp-optional{
+  font-weight: 400;
+  color: #6b8196;
+}
+
+.lp-form input,
+.lp-form textarea{
+  width: 100%;
+  padding: .45rem .8rem;
+  margin-bottom: .7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: rgba(245,245,245,.92);
+  color: var(--text);
+  font-size: .85rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.lp-form textarea{
+  resize: vertical;
+}
+
+.lp-form input:focus,
+.lp-form textarea:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(68, 199, 232, 0.2);
+}
+
+.lp-form button{
+  width: 100%;
+  border: none;
+  padding: .55rem 1rem;
+  font-size: .9rem;
+  margin-top: .2rem;
+}
+
+.lp-honeypot{
+  display: none !important;
+}
