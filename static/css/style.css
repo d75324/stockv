@@ -213,3 +213,14 @@
   border: 1px solid #d1d5db;
   background: #fff;
 }
+
+/* Botón secundario: volver / navegación */
+.btn-back{
+  background: #e4dcf8;
+  color: #4b3a8c;
+}
+
+.btn-back:hover{
+  background: #6f42c1;
+  color: #ffffff;
+}
