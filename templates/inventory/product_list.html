@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 100%; margin: 2rem auto; padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0;">Catálogo de Productos</h2>
+        <a href="{% url 'product_add' %}" style="text-decoration: none;">
+            <button style="width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem;">+ Nuevo Producto</button>
+        </a>
+    </div>
+    <hr>
+
+    <div style="overflow-x: auto;">
+        {% include 'includes/_stock_table.html' with show_image=True %}
+    </div>
+
+    {% if is_paginated %}
+        <nav style="display: flex; justify-content: center; gap: 1rem; align-items: center; margin-top: 1rem;">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>
+            {% endif %}
+            <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Siguiente &raquo;</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+
+    <div style="margin-top: 1.5rem;">
+        <a href="{% url 'dashboard' %}">&larr; Volver al Dashboard</a>
+    </div>
+</div>
+{% endblock %}
