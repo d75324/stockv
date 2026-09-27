@@ -138,10 +138,8 @@ class CustomLoginView(LoginView):
         
         return super().form_valid(form)
 
-
 class CustomLogoutView(LogoutView):
     http_method_names = ['post', 'get']
-
 
 class CompanyRegistrationView(LoginRequiredMixin, CreateView):
     model = Company
@@ -183,6 +181,34 @@ class CompanyRegistrationView(LoginRequiredMixin, CreateView):
 
         return response
 
+class ProductListView(LoginRequiredMixin, ListView):
+    """
+    Catálogo completo de productos activos de la empresa del usuario.
+    """
+    model = Product
+    template_name = 'inventory/product_list.html'
+    context_object_name = 'product_list'
+    paginate_by = 25
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get_queryset(self):
+        return Product.objects.filter(
+            company=self.get_company(),
+            is_active=True
+        ).order_by('name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company'] = self.get_company()
+        return context
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
