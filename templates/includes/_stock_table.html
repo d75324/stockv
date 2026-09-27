@@ -3,6 +3,7 @@
 <table class="table table-hover">
     <thead>
         <tr>
+        {% if show_image %}<th scope="col">Foto</th>{% endif %}
         <th scope="col">ID</th>
         <th scope="col">SKU</th>
         <th scope="col">Categoría</th>
@@ -16,6 +17,11 @@
     <tbody>
         {% for product in product_list %}
             <tr>
+                {% if show_image %}
+                <td>
+                    <img src="{{ product.thumbnail_url }}" alt="{{ product.name }}" class="product-thumb">
+                </td>
+                {% endif %}
                 <td> {{ product.id }} </td>
                 <td> {{ product.sku }} </td>
                 <td> {{ product.name }} </td>
@@ -28,9 +34,9 @@
                 </td>
             </tr>
         {% empty %}
-            <tr>
-                <td colspan="8" style="text-align: center;">Todavía no hay productos cargados.</td>
-            </tr>
+            <td colspan="{% if show_image %}9{% else %}8{% endif %}" style="text-align: center;">
+                Todavía no hay productos cargados.
+            </td>
         {% endfor %}
     </tbody>
 </table>
