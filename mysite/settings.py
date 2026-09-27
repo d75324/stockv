@@ -88,5 +88,9 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+## Archivos subidos por los usuarios: fotos de productos, logos, etc. ##
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
