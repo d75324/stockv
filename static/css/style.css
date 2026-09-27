@@ -111,7 +111,7 @@
     font-size: 0.9rem;
   }
 
-/* ======== Asegura que cualquier input dentro de una card tome el estilo glass ======== */
+/* === Asegura que cualquier input dentro de una card tome el estilo glass === */
   .card input[type="text"],
   .card input[type="email"],
   .card input[type="password"] {
@@ -202,4 +202,14 @@
 
 .btn-style:active {
   transform: scale(0.98);
+}
+
+/* Miniatura de producto en tablas */
+.product-thumb{
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
 }
