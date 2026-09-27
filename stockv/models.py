@@ -6,6 +6,7 @@ from django.utils.text import slugify
 from decimal import Decimal
 from django.db.models import Sum
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.templatetags.static import static
 
 class UserManager(BaseUserManager):
     def create_user(self, email, first_name, password=None, **extra_fields):
@@ -220,6 +221,16 @@ class Product(models.Model):
 	@property
 	def available_stock(self):
 		return self.current_stock - self.reserved_stock
+
+
+	# URL de la foto para mostrar en listados: si el producto no tiene foto propia
+	# (o el archivo no existe), devolvemos la imagen por defecto de static/images.
+	@property
+	def thumbnail_url(self):
+		if self.image and self.image.name != 'products/default_product.jpg':
+			if self.image.storage.exists(self.image.name):
+				return self.image.url
+		return static('images/default_product.svg')
 
 	# verificamos nivel de stock
 	@property
