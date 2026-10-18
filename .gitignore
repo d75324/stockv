@@ -1,61 +1,43 @@
-# Byte-compiled / optimized / DLL files
+# ==========================================================
+# Python
+# ==========================================================
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
+# Packaging
 *.egg-info/
-.installed.cfg
+.eggs/
 *.egg
-MANIFEST
+dist/
+wheels/
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
+# Logs de instalación
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# ==========================================================
+# Tests y herramientas de calidad
+# ==========================================================
 htmlcov/
 .tox/
 .nox/
 .coverage
 .coverage.*
 .cache
-nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
 .hypothesis/
 .pytest_cache/
-cover/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
+# ==========================================================
+# Django
+# ==========================================================
 *.log
 local_settings.py
 db.sqlite3
@@ -63,88 +45,45 @@ db.sqlite3-journal
 stockv.sqlite3
 stockv.sqlite3-journal
 
+# Traducciones compiladas
+*.mo
 
-# Flask stuff:
-instance/
-.webassets-cache
+# Archivos estáticos recolectados (collectstatic)
+staticfiles/
 
-# Scrapy stuff:
-.scrapy
+# Archivos subidos por usuarios (se conservan solo imágenes por defecto)
+media/*
+!media/companies/
+media/companies/*
+!media/companies/default_logo.jpg
+!media/products/
+media/products/*
+!media/products/default_product.jpg
 
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-.pybuilder/
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-.pdm.toml
-.pdm-python
-.pdm-build/
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Variables de entorno! Nunca subir a git!
+# ==========================================================
+# Variables de entorno:
+# ==========================================================
 .env
+.env.*
+!.env.example
 .ev
-.venv
-ev/
-env/
+
+# Entornos virtuales
+.venv/
 venv/
+env/
+ev/
 EV/
 ev.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# ==========================================================
+# Editores y sistema operativo
+# ==========================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
 
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# Ruff stuff:
-.ruff_cache/
-
-# PyPI configuration file
-.pypirc
-
-# archivos estaticos
-staticfiles/
-mysite_box/staticfiles/
-
-# Ignorar archivos multimedia subidos por usuarios
-media/
-# static/
-
+# Configuración local de Claude Code (personal)
+.claude/settings.local.json
