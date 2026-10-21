@@ -33,8 +33,9 @@ PRODUCT_CSV_HEADERS = [
     'Stock Inicial',
     'Precio Ventas',
     'Nivel Mínimo de Stock',
-    'Descripción (opcional)',
+    'Descripción',
 ]
+
 
 
 class HomeView(TemplateView):
@@ -138,8 +139,10 @@ class CustomLoginView(LoginView):
         
         return super().form_valid(form)
 
+
 class CustomLogoutView(LogoutView):
     http_method_names = ['post', 'get']
+
 
 class CompanyRegistrationView(LoginRequiredMixin, CreateView):
     model = Company
@@ -181,6 +184,7 @@ class CompanyRegistrationView(LoginRequiredMixin, CreateView):
 
         return response
 
+
 class ProductListView(LoginRequiredMixin, ListView):
     """
     Catálogo completo de productos activos de la empresa del usuario.
@@ -209,6 +213,7 @@ class ProductListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['company'] = self.get_company()
         return context
+
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
@@ -531,7 +536,7 @@ class ProductCSVImportView(LoginRequiredMixin, TemplateView):
                         cost_price=cost_price,
                         sale_price=sale_price,
                         min_stock_level=min_stock_level,
-                        description=get('Descripción opcional') or None,
+                        description=get('Descripción') or None,
                     )
 
                     if default_warehouse and initial_stock > 0:
