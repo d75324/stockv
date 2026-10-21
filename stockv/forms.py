@@ -55,6 +55,7 @@ class UserRegistrationForm(UserCreationForm):
         )
         return user
 
+
 class UserLoginForm(AuthenticationForm):
     """
     Formulario de Login
@@ -77,6 +78,7 @@ class UserLoginForm(AuthenticationForm):
         })
     )
 
+
 class CompanyRegistrationForm(forms.ModelForm):
     """
     Formulario para registro de empresas
@@ -96,6 +98,7 @@ class CompanyRegistrationForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ciudad'}),
             'logo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
+
 
 class ProductForm(forms.ModelForm):
     initial_stock = forms.IntegerField(
@@ -168,6 +171,9 @@ class ProductForm(forms.ModelForm):
         
         self.fields['provider'].required = False
         self.fields['provider'].empty_label = "Sin Proveedor (Opcional)"
+        # El SKU es obligatorio para los productos que se carguen o editen a partir de ahora
+        self.fields['sku'].required = True
+
 
 class ProviderForm(forms.ModelForm):
     class Meta:
@@ -217,6 +223,7 @@ class ProviderForm(forms.ModelForm):
                             'payment_terms', 'credit_limit', 'rating', 'main_products',
                             'warehouses', 'notes']:
             self.fields[field_name].required = False
+
 
 class ProductRestockForm(forms.Form):
     """
@@ -342,6 +349,9 @@ class SaleItemForm(forms.ModelForm):
             self.fields['product'].queryset = Product.objects.filter(company=company, is_active=True)
 
         self.fields['product'].empty_label = "Seleccioná un producto"
+
+        # En el desplegable va solo el SKU - si no tiene, el nombre, pero el SKU tiene que ser obligatorio.
+        self.fields['product'].label_from_instance = lambda p: p.sku or p.name
 
 
 # Formset: una Sale con muchas SaleItem cargadas en la misma pantalla.
