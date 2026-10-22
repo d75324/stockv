@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, LoginForm, DashboardView, RegisterView, CustomLoginView, CustomLogoutView, CompanyRegistrationView, ProductCreateView, ProviderCreateView, ProductRestockView, ProductCSVImportView, ProductCSVSampleView, SaleCreateView, SaleListView, SaleDetailView, SaleConfirmView, SaleCancelView, ProfileView, ProductListView
+from .views import HomeView, LoginForm, DashboardView, RegisterView, CustomLoginView, CustomLogoutView, CompanyRegistrationView, ProductCreateView, ProviderCreateView, ProductRestockView, ProductCSVImportView, ProductCSVSampleView, SaleCreateView, SaleListView, SaleDetailView, SaleConfirmView, SaleCancelView, ProfileView, ProductListView, ProductUpdateView
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -20,5 +20,6 @@ urlpatterns = [
     path('sales/<int:pk>/cancel/', SaleCancelView.as_view(), name='sale_cancel'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('products/', ProductListView.as_view(), name='product_list'),
+    path('products/<int:pk>/edit/', ProductUpdateView.as_view(), name='product_edit'),
 ]
 

@@ -143,10 +143,10 @@ class ProductForm(forms.ModelForm):
     # necesito adaptar el formulario para los casos en que la empresa es nueva (todavía no existen marcas ni proveedores cargados). Para eso, 1. filtro los QuerySets por la compañía del usuario y hacer que esos campos sean opcionales en el formulario (required=False) y 2. asegurar que el sistema tenga al menos una Unidad de Medida por defecto, para que después el navegador no lo reclame.    
     def __init__(self, *args, **kwargs):
         # Extraemos la compañía que viene desde la vista
-        company = kwargs.pop('company', None) # .pop elimina el valor a partir de la clave (y lo devuelve). Si no lo encuentra, devuelve None.
+        company = kwargs.pop('company', None)
         super().__init__(*args, **kwargs)
-        # De esta forma el argumento company queda disponible en la variable local company, pero no se pase hacia arriba cuando se llama a super().__init__(*args, **kwargs), evitando que la clase padre no recibe un argumento que no espera.
-
+        # la guardamos en el formulario para usarla después en clean_sku()
+        self.company = company
         if company:
             # 1. Creamos o recuperamos la unidad por defecto y la guardamos en una variable
             uom_default, created = UnitOfMeasure.objects.get_or_create(
@@ -174,6 +174,20 @@ class ProductForm(forms.ModelForm):
         # El SKU es obligatorio para los productos que se carguen o editen a partir de ahora
         self.fields['sku'].required = True
 
+    def clean_sku(self):
+        """
+        El SKU no se puede repetir dentro de la misma empresa (UniqueConstraint company + sku).
+        Como 'company' no es un campo del formulario, Django no valida esa restricción y de un error 500 al guardar.
+        Lo validamos acá. Además, al editar, excluimos el propio producto para que pueda conservar su SKU.
+        """
+        sku = (self.cleaned_data.get('sku') or '').strip()
+        if sku and self.company:
+            duplicados = Product.objects.filter(company=self.company, sku=sku)
+            if self.instance.pk:
+                duplicados = duplicados.exclude(pk=self.instance.pk)
+            if duplicados.exists():
+                raise forms.ValidationError("Ya existe otro producto con este SKU en tu empresa.")
+        return sku
 
 class ProviderForm(forms.ModelForm):
     class Meta:
@@ -369,3 +383,12 @@ SaleItemFormSet = forms.inlineformset_factory(
 )
 
 
+class ProductUpdateForm(ProductForm):
+    """
+    Formulario para editar un producto ya cargado (columna E de la tabla de stock).
+    Reutiliza todo ProductForm (campos, widgets, desplegables filtrados por empresa y
+    validación de SKU) pero quita 'Stock Inicial', que solo se va a poder editar a mano,
+    con Recargar Stock (R) o con las ventas, para no perder historial de movimientos.
+    """
+    # Asignar None a un campo declarado en la clase padre para eliminarlo del formulario hijo.
+    initial_stock = None   # quita "Stock Inicial" del formulario

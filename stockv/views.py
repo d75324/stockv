@@ -1,4 +1,4 @@
-from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm, ProviderForm, ProductRestockForm, SaleForm, SaleItemFormSet
+from .forms import UserRegistrationForm, UserLoginForm, CompanyRegistrationForm, ProductForm, ProviderForm, ProductRestockForm, SaleForm, SaleItemFormSet, ProductUpdateForm
 from .models import Product, WarehouseTransfer, Company, User, Warehouse, Membership, WarehouseStock, UnitOfMeasure, StockMovement, Provider, Brand, Sale, SaleItem, Customer
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.db import transaction
 from django.http import HttpResponse
 from django.views import View
-from django.views.generic import TemplateView, CreateView, FormView, ListView, DetailView
+from django.views.generic import TemplateView, CreateView, FormView, ListView, DetailView, UpdateView
 from django.views.generic.edit import CreateView
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -826,3 +826,44 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         context['company'] = company
         context['membership'] = membership
         return context
+
+
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    Edición de un producto ya cargado (columna E de la tabla de stock).
+    Permite cambiar categoría, SKU, descripción, precios, foto, etc.
+    El stock NO se edita acá: para eso está Recargar Stock (R).
+    """
+    model = Product
+    form_class = ProductUpdateForm
+    template_name = 'inventory/product_edit.html'
+    context_object_name = 'product'
+    success_url = reverse_lazy('product_list')
+
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    # UpdateView busca el producto por el pk de la URL DENTRO de este queryset:
+    # así nadie puede editar productos de otra empresa cambiando el número en la URL (da 404).
+    def get_queryset(self):
+        return Product.objects.filter(company=self.get_company(), is_active=True)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.get_company()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company'] = self.get_company()
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Producto "{form.instance.sku}" actualizado correctamente.')
+        return super().form_valid(form)
