@@ -33,14 +33,12 @@
                 data-bs-toggle="dropdown">
                 {{ user.first_name }} {{ user.last_name }}  ::  {{ company.name}}
             </a>
-
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
                     <a class="dropdown-item" href="{% url 'profile' %}">
                         Perfil
                     </a>
                 </li>
-
                 <li>
                     <hr class="dropdown-divider">
                 </li>
@@ -55,9 +53,7 @@
             </ul>
         </li>
     </ul>
-
 {% else %}
-
     <div class="container-fluid px-4">
         <a class="navbar-brand" href="#">StockV</a>
         <button class="navbar-toggler"
@@ -79,12 +75,10 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link disabled" aria-disabled="true">
-                        
                     </a>
                 </li>
             </ul>
