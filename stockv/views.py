@@ -867,3 +867,135 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, f'Producto "{form.instance.sku}" actualizado correctamente.')
         return super().form_valid(form)
+
+
+class ProductBackupView(LoginRequiredMixin, View):
+    """
+    Copia de seguridad completa del catálogo de la empresa del usuario.
+    Descarga un .zip con:
+      - productos.xlsx  -> hoja 'Productos' (un renglón por producto) y
+                           hoja 'Stock por Depósito' (cantidades y ubicación)
+      - imagenes/       -> la foto de cada producto, nombrada con su SKU
+    Incluye también los productos inactivos, para que la copia sea completa.
+    """
+    def get_company(self):
+        user = self.request.user
+        company = Company.objects.filter(owner=user).first()
+        if not company:
+            membership = user.memberships.filter(is_active=True).first()
+            if membership:
+                company = membership.company
+        return company
+
+    def get(self, request, *args, **kwargs):
+        import os
+        import re
+        import tempfile
+        import zipfile
+        from django.http import FileResponse
+        from openpyxl import Workbook
+        from openpyxl.styles import Font
+
+        company = self.get_company()
+        if not company:
+            messages.error(request, 'No tenés una empresa asociada para generar la copia de seguridad.')
+            return redirect('product_list')
+
+        products = (
+            Product.objects.filter(company=company)
+            .select_related('brand', 'provider', 'uom')
+            .order_by('name')
+        )
+
+        def safe_name(value):
+            # nombre de archivo seguro para Windows/Mac/Linux
+            return re.sub(r'[^A-Za-z0-9._-]+', '_', str(value)).strip('_') or 'producto'
+
+        tmp = tempfile.SpooledTemporaryFile(max_size=50 * 1024 * 1024)
+        with zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zf:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = 'Productos'
+            ws.append([
+                'Categoría', 'SKU / Código Interno', 'Código de Barras / EAN', 'Marca',
+                'Proveedor', 'Unidad de Medida', 'Precio de Costo', 'Precio Ventas',
+                'Stock Actual', 'Stock Reservado', 'Stock Disponible', 'Nivel Mínimo de Stock',
+                'Descripción', 'Activo', 'Fecha Creación', 'Última Actualización', 'Imagen',
+            ])
+
+            ws_stock = wb.create_sheet('Stock por Depósito')
+            ws_stock.append([
+                'SKU / Código Interno', 'Producto', 'Depósito', 'Cantidad',
+                'Pasillo', 'Estantería', 'Contenedor / Rack', 'Último Inventario Manual',
+            ])
+
+            used_names = set()
+            for product in products:
+                # --- imagen: se copia solo si el producto tiene foto propia y el archivo existe ---
+                image_path = ''
+                if product.image and product.image.name != 'products/default_product.jpg':
+                    try:
+                        if product.image.storage.exists(product.image.name):
+                            ext = os.path.splitext(product.image.name)[1].lower() or '.jpg'
+                            base = safe_name(product.sku or f'producto_{product.pk}')
+                            filename = f'{base}{ext}'
+                            n = 2
+                            while filename in used_names:
+                                filename = f'{base}_{n}{ext}'
+                                n += 1
+                            used_names.add(filename)
+                            with product.image.storage.open(product.image.name, 'rb') as f:
+                                zf.writestr(f'imagenes/{filename}', f.read())
+                            image_path = f'imagenes/{filename}'
+                    except Exception:
+                        image_path = ''  # si una imagen falla, no frenamos toda la copia
+
+                ws.append([
+                    product.name,
+                    product.sku or '',
+                    product.barcode or '',
+                    product.brand.name if product.brand else '',
+                    product.provider.name if product.provider else '',
+                    product.uom.abbreviation if product.uom else '',
+                    product.cost_price,
+                    product.sale_price,
+                    product.current_stock,
+                    product.reserved_stock,
+                    product.available_stock,
+                    product.min_stock_level,
+                    product.description or '',
+                    'Sí' if product.is_active else 'No',
+                    timezone.localtime(product.created_at).replace(tzinfo=None) if product.created_at else '',
+                    timezone.localtime(product.updated_at).replace(tzinfo=None) if product.updated_at else '',
+                    image_path,
+                ])
+
+                for ws_row in product.warehouse_stocks.select_related('warehouse').all():
+                    ws_stock.append([
+                        product.sku or '',
+                        str(product),
+                        ws_row.warehouse.name,
+                        ws_row.quantity,
+                        ws_row.aisle or '',
+                        ws_row.shelf or '',
+                        ws_row.bin_rack or '',
+                        timezone.localtime(ws_row.last_inventory_check).replace(tzinfo=None) if ws_row.last_inventory_check else '',
+                    ])
+
+            # encabezados en negrita, primera fila fija y ancho de columnas legible
+            for sheet in (ws, ws_stock):
+                for cell in sheet[1]:
+                    cell.font = Font(bold=True)
+                sheet.freeze_panes = 'A2'
+                for column in sheet.columns:
+                    width = max(len(str(c.value)) if c.value is not None else 0 for c in column)
+                    sheet.column_dimensions[column[0].column_letter].width = min(max(width + 2, 10), 50)
+
+            xlsx_buffer = io.BytesIO()
+            wb.save(xlsx_buffer)
+            zf.writestr('productos.xlsx', xlsx_buffer.getvalue())
+
+        tmp.seek(0)
+        fecha = timezone.localdate().strftime('%Y-%m-%d')
+        filename = f'stockv_backup_{safe_name(company.name)}_{fecha}.zip'
+        return FileResponse(tmp, as_attachment=True, filename=filename, content_type='application/zip')
