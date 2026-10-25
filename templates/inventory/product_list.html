@@ -14,11 +14,13 @@
                     + Nuevo Producto
                 </button>
             </a>
+            {% if is_owner %}
             <a href="{% url 'product_backup' %}" style="text-decoration: none;" title="Descarga un .zip con todos tus productos en Excel y sus imágenes">
                 <button class="btn-back" style="width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem;">&#11015; 
                     Descargar Stock
                 </button>
             </a>
+            {% endif %}
         </div>
     </div>
     <hr>
