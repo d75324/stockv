@@ -211,7 +211,10 @@ class ProductListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['company'] = self.get_company()
+        company = self.get_company()
+        context['company'] = company
+        # el botón de copia de seguridad solo se muestra al propietario
+        context['is_owner'] = company is not None and company.owner_id == self.request.user.id
         return context
 
 
@@ -878,14 +881,14 @@ class ProductBackupView(LoginRequiredMixin, View):
       - imagenes/       -> la foto de cada producto, nombrada con su SKU
     Incluye también los productos inactivos, para que la copia sea completa.
     """
-    def get_company(self):
-        user = self.request.user
-        company = Company.objects.filter(owner=user).first()
-        if not company:
-            membership = user.memberships.filter(is_active=True).first()
-            if membership:
-                company = membership.company
-        return company
+    # def get_company(self):
+    #     user = self.request.user
+    #     company = Company.objects.filter(owner=user).first()
+    #     if not company:
+    #         membership = user.memberships.filter(is_active=True).first()
+    #         if membership:
+    #             company = membership.company
+    #     return company
 
     def get(self, request, *args, **kwargs):
         import os
@@ -896,9 +899,10 @@ class ProductBackupView(LoginRequiredMixin, View):
         from openpyxl import Workbook
         from openpyxl.styles import Font
 
-        company = self.get_company()
+        # solo el propietario (Company.owner) puede descargar la copia de seguridad
+        company = Company.objects.filter(owner=request.user).first()
         if not company:
-            messages.error(request, 'No tenés una empresa asociada para generar la copia de seguridad.')
+            messages.error(request, 'Solo el propietario de la empresa puede descargar la copia de seguridad.')
             return redirect('product_list')
 
         products = (
