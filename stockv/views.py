@@ -39,13 +39,10 @@ PRODUCT_CSV_HEADERS = [
 
 
 class HomeView(TemplateView):
-    # get_template_names() es un método que viene en TemplateView, lo sobre-escribimos para cambiar el template que va a usar la vista.
-    def get_template_names(self):
-        if self.request.user.is_authenticated:
-            return ["dashboard/index.html"]
-    
-        return ["home.html"]
-    template_name = 'home.html'
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().get(request, *args, **kwargs)
 
 
 class LoginForm(TemplateView):
